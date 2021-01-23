@@ -10,7 +10,7 @@ export async function request( query ){
             'X-Shopify-Storefront-Access-Token': token,
             'Accept': 'application/json'
         },
-        body: JSON.stringify({ query: query }),
+        body: query,
     });
 
     const data = await res.json();
