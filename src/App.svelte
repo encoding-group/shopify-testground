@@ -8,11 +8,12 @@
   };
 
   import Product from "./components/Product.svelte";
+  import ShopifyCollectionButton from "./components/ShopifyCollectionButton.svelte";
 
 </script>
 
 <main>
-  <Product {product} />
+  <ShopifyCollectionButton />
 </main>
 
 <style lang="scss">
