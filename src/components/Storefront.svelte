@@ -1,6 +1,8 @@
 <script>
 
-    import { request } from '../utilities/storefront.js';
+	import Product from './Product.svelte';
+	import { request } from '../utilities/storefront.js';
+
     let load = request(`{
 		products(first: 50) {
 			edges {
@@ -22,7 +24,11 @@
 		<p>Loading</p>
 	{:then data}
 
-		Success
+		{#each data.products.edges as product}
+
+			<Product product={product.node} />
+
+		{/each}
 
 	{:catch error}
 		<p>Error</p>
