@@ -1,12 +1,14 @@
 <script>
 
   import Product from "./components/Product.svelte";
-  import ShopifyCollectionButton from "./components/ShopifyCollectionButton.svelte";
+  import CollectionButton from "./components/CollectionButton.svelte";
+  import Storefront from "./components/Storefront.svelte";
 
 </script>
 
 <!-- <Product /> -->
-<!-- <ShopifyCollectionButton /> -->
+<!-- <CollectionButton /> -->
+<Storefront />
 
 <style lang="scss">
 
