@@ -8,8 +8,8 @@ npm run dev
 npm run build
 ```
 
-https://shopify.dev/docs/storefront-api
+Resources:
 
-https://shopify.dev/tutorials/create-a-checkout-with-storefront-api
-
-https://shopify.dev/tools/libraries/storefront-api/javascript
+- [Storefront API](https://shopify.dev/docs/storefront-api)
+- [Storefront JS API](https://shopify.dev/tools/libraries/storefront-api/javascript)
+- [Checkout tutorial](https://shopify.dev/tutorials/create-a-checkout-with-storefront-api)
