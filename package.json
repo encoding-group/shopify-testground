@@ -17,12 +17,9 @@
     "svelte": "^3.0.0"
   },
   "dependencies": {
-    "lazysizes": "^5.2.2",
     "node-sass": "^5.0.0",
     "rollup-plugin-scss": "^2.6.1",
     "sirv-cli": "^1.0.0",
-    "svelte-preprocess": "^4.6.1",
-    "svelte-routing": "1.4.0",
-    "swipejs": "^2.2.18"
+    "svelte-preprocess": "^4.6.1"
   }
 }

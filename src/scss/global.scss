@@ -18,11 +18,16 @@ body {
 	background-color: $white;
 }
 
-.lazyload,
-.lazyloading {
-	opacity: 0;
+input, button {
+	display: block;
+	@include border;
+	padding: 0.5em 1em;
+	margin: 0.5em;
+	margin-left: 0;
 }
-.lazyloaded {
-	opacity: 1;
-	transition: opacity 300ms;
+
+button {
+	&:hover {
+		background-color: #ccc;
+	}
 }

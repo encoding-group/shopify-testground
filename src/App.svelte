@@ -1,36 +1,24 @@
 <script>
-  import { Router, Link, Route } from "svelte-routing";
 
-  import Header from "./components/Header.svelte";
-  import Footer from "./components/Footer.svelte";
+  const product = {
+    title: 'T-Shirt',
+    price: '39.99',
+    description: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.',
+    image: 'https://cdn.shopify.com/s/files/1/0070/7693/7775/products/1200x1800px_weiss-tshirt-rotetypo-vorne_1800x1800.jpg'
+  };
 
-  import Start from "./routes/start/Index.svelte";
+  import Product from "./components/Product.svelte";
 
-  export let url = "";
 </script>
 
-<Router url="{url}">
-
-	<div class="header">
-        <div class="wrapper">
-            <Header />
-        </div>
-    </div>
-
-    <div class="page">
-        <div class="wrapper">
-
-            <main>
-                <Route path="/"><Start /></Route>
-            </main>
-
-            <Footer />
-
-        </div>
-    </div>
-
-</Router>
+<main>
+  <Product {product} />
+</main>
 
 <style lang="scss">
+
+  main {
+    padding: 2rem;
+  }
 
 </style>
