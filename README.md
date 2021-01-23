@@ -7,3 +7,7 @@ npm install
 npm run dev
 npm run build
 ```
+
+https://shopify.dev/docs/storefront-api
+
+https://shopify.dev/tutorials/create-a-checkout-with-storefront-api

@@ -134,27 +134,10 @@ var app = (function () {
         }
     }
     const outroing = new Set();
-    let outros;
     function transition_in(block, local) {
         if (block && block.i) {
             outroing.delete(block);
             block.i(local);
-        }
-    }
-    function transition_out(block, local, detach, callback) {
-        if (block && block.o) {
-            if (outroing.has(block))
-                return;
-            outroing.add(block);
-            outros.c.push(() => {
-                outroing.delete(block);
-                if (callback) {
-                    if (detach)
-                        block.d(1);
-                    callback();
-                }
-            });
-            block.o(local);
         }
     }
 
@@ -163,9 +146,6 @@ var app = (function () {
         : typeof globalThis !== 'undefined'
             ? globalThis
             : global);
-    function create_component(block) {
-        block && block.c();
-    }
     function mount_component(component, target, anchor) {
         const { fragment, on_mount, on_destroy, after_update } = component.$$;
         fragment && fragment.m(target, anchor);
@@ -323,13 +303,6 @@ var app = (function () {
         else
             dispatch_dev('SvelteDOMSetAttribute', { node, attribute, value });
     }
-    function set_data_dev(text, data) {
-        data = '' + data;
-        if (text.wholeText === data)
-            return;
-        dispatch_dev('SvelteDOMSetData', { node: text, data });
-        text.data = data;
-    }
     function validate_slots(name, slot, keys) {
         for (const slot_key of Object.keys(slot)) {
             if (!~keys.indexOf(slot_key)) {
@@ -371,12 +344,8 @@ var app = (function () {
     	let t0;
     	let div2;
     	let h1;
-    	let t1_value = /*product*/ ctx[0].title + "";
-    	let t1;
     	let t2;
     	let p;
-    	let t3_value = /*product*/ ctx[0].description + "";
-    	let t3;
     	let t4;
     	let div1;
     	let input;
@@ -394,10 +363,10 @@ var app = (function () {
     			t0 = space();
     			div2 = element("div");
     			h1 = element("h1");
-    			t1 = text(t1_value);
+    			h1.textContent = `${/*product*/ ctx[0].title}`;
     			t2 = space();
     			p = element("p");
-    			t3 = text(t3_value);
+    			p.textContent = `${/*product*/ ctx[0].description}`;
     			t4 = space();
     			div1 = element("div");
     			input = element("input");
@@ -406,23 +375,23 @@ var app = (function () {
     			button.textContent = "Put in basket";
     			attr_dev(img, "alt", "T-Shirt");
     			if (img.src !== (img_src_value = /*product*/ ctx[0].image)) attr_dev(img, "src", img_src_value);
-    			add_location(img, file, 14, 12, 167);
-    			add_location(figure, file, 13, 8, 146);
-    			add_location(div0, file, 11, 4, 131);
+    			add_location(img, file, 19, 12, 671);
+    			add_location(figure, file, 18, 8, 650);
+    			add_location(div0, file, 16, 4, 635);
     			attr_dev(h1, "class", "svelte-nrpu0h");
-    			add_location(h1, file, 20, 8, 260);
-    			add_location(p, file, 22, 8, 294);
+    			add_location(h1, file, 25, 8, 764);
+    			add_location(p, file, 27, 8, 798);
     			attr_dev(input, "id", "quantity");
     			attr_dev(input, "type", "number");
     			input.value = "1";
     			attr_dev(input, "min", "1");
-    			add_location(input, file, 26, 12, 363);
-    			add_location(button, file, 27, 12, 431);
+    			add_location(input, file, 31, 12, 867);
+    			add_location(button, file, 32, 12, 935);
     			attr_dev(div1, "class", "buy svelte-nrpu0h");
-    			add_location(div1, file, 24, 8, 332);
-    			add_location(div2, file, 18, 4, 245);
+    			add_location(div1, file, 29, 8, 836);
+    			add_location(div2, file, 23, 4, 749);
     			attr_dev(article, "class", "svelte-nrpu0h");
-    			add_location(article, file, 10, 0, 117);
+    			add_location(article, file, 15, 0, 621);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -435,10 +404,8 @@ var app = (function () {
     			append_dev(article, t0);
     			append_dev(article, div2);
     			append_dev(div2, h1);
-    			append_dev(h1, t1);
     			append_dev(div2, t2);
     			append_dev(div2, p);
-    			append_dev(p, t3);
     			append_dev(div2, t4);
     			append_dev(div2, div1);
     			append_dev(div1, input);
@@ -450,14 +417,7 @@ var app = (function () {
     				mounted = true;
     			}
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*product*/ 1 && img.src !== (img_src_value = /*product*/ ctx[0].image)) {
-    				attr_dev(img, "src", img_src_value);
-    			}
-
-    			if (dirty & /*product*/ 1 && t1_value !== (t1_value = /*product*/ ctx[0].title + "")) set_data_dev(t1, t1_value);
-    			if (dirty & /*product*/ 1 && t3_value !== (t3_value = /*product*/ ctx[0].description + "")) set_data_dev(t3, t3_value);
-    		},
+    		p: noop,
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
@@ -485,34 +445,28 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Product", slots, []);
-    	let { product } = $$props;
-    	const writable_props = ["product"];
+
+    	const product = {
+    		title: "T-Shirt",
+    		price: "39.99",
+    		description: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+    		image: "https://cdn.shopify.com/s/files/1/0070/7693/7775/products/1200x1800px_weiss-tshirt-rotetypo-vorne_1800x1800.jpg"
+    	};
+
+    	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Product> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$$set = $$props => {
-    		if ("product" in $$props) $$invalidate(0, product = $$props.product);
-    	};
-
     	$$self.$capture_state = () => ({ product, handleBuy });
-
-    	$$self.$inject_state = $$props => {
-    		if ("product" in $$props) $$invalidate(0, product = $$props.product);
-    	};
-
-    	if ($$props && "$$inject" in $$props) {
-    		$$self.$inject_state($$props.$$inject);
-    	}
-
     	return [product];
     }
 
     class Product extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { product: 0 });
+    		init(this, options, instance, create_fragment, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -520,65 +474,33 @@ var app = (function () {
     			options,
     			id: create_fragment.name
     		});
-
-    		const { ctx } = this.$$;
-    		const props = options.props || {};
-
-    		if (/*product*/ ctx[0] === undefined && !("product" in props)) {
-    			console_1.warn("<Product> was created without expected prop 'product'");
-    		}
-    	}
-
-    	get product() {
-    		throw new Error("<Product>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set product(value) {
-    		throw new Error("<Product>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
-    /* src/App.svelte generated by Svelte v3.31.0 */
-    const file$1 = "src/App.svelte";
+    /* src/components/ShopifyCollectionButton.svelte generated by Svelte v3.31.0 */
+
+    const file$1 = "src/components/ShopifyCollectionButton.svelte";
 
     function create_fragment$1(ctx) {
-    	let main;
-    	let product_1;
-    	let current;
-
-    	product_1 = new Product({
-    			props: { product: /*product*/ ctx[0] },
-    			$$inline: true
-    		});
+    	let div;
 
     	const block = {
     		c: function create() {
-    			main = element("main");
-    			create_component(product_1.$$.fragment);
-    			attr_dev(main, "class", "svelte-s4rw4t");
-    			add_location(main, file$1, 13, 0, 584);
+    			div = element("div");
+    			attr_dev(div, "id", "collection-component-1611416007490");
+    			add_location(div, file$1, 263, 0, 5684);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, main, anchor);
-    			mount_component(product_1, main, null);
-    			current = true;
+    			insert_dev(target, div, anchor);
     		},
     		p: noop,
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(product_1.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(product_1.$$.fragment, local);
-    			current = false;
-    		},
+    		i: noop,
+    		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(main);
-    			destroy_component(product_1);
+    			if (detaching) detach_dev(div);
     		}
     	};
 
@@ -593,37 +515,270 @@ var app = (function () {
     	return block;
     }
 
-    function instance$1($$self, $$props, $$invalidate) {
+    function instance$1($$self, $$props) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("App", slots, []);
+    	validate_slots("ShopifyCollectionButton", slots, []);
 
-    	const product = {
-    		title: "T-Shirt",
-    		price: "39.99",
-    		description: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
-    		image: "https://cdn.shopify.com/s/files/1/0070/7693/7775/products/1200x1800px_weiss-tshirt-rotetypo-vorne_1800x1800.jpg"
-    	};
+    	(function () {
+    		var scriptURL = "https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js";
+
+    		if (window.ShopifyBuy) {
+    			if (window.ShopifyBuy.UI) {
+    				ShopifyBuyInit();
+    			} else {
+    				loadScript();
+    			}
+    		} else {
+    			loadScript();
+    		}
+
+    		function loadScript() {
+    			var script = document.createElement("script");
+    			script.async = true;
+    			script.src = scriptURL;
+    			(document.getElementsByTagName("head")[0] || document.getElementsByTagName("body")[0]).appendChild(script);
+    			script.onload = ShopifyBuyInit;
+    		}
+
+    		function ShopifyBuyInit() {
+    			var client = ShopifyBuy.buildClient({
+    				domain: "encoding-group.myshopify.com",
+    				storefrontAccessToken: "1832b09a7e0b4149972fee64ff6fc712"
+    			});
+
+    			ShopifyBuy.UI.onReady(client).then(function (ui) {
+    				ui.createComponent("collection", {
+    					id: "242704416961",
+    					node: document.getElementById("collection-component-1611416007490"),
+    					moneyFormat: "%E2%82%AC%7B%7Bamount_with_comma_separator%7D%7D",
+    					options: {
+    						"product": {
+    							"styles": {
+    								"product": {
+    									"@media (min-width: 601px)": {
+    										"max-width": "calc(25% - 20px)",
+    										"margin-left": "20px",
+    										"margin-bottom": "50px",
+    										"width": "calc(25% - 20px)"
+    									},
+    									"img": {
+    										"height": "calc(100% - 15px)",
+    										"position": "absolute",
+    										"left": "0",
+    										"right": "0",
+    										"top": "0"
+    									},
+    									"imgWrapper": {
+    										"padding-top": "calc(75% + 15px)",
+    										"position": "relative",
+    										"height": "0"
+    									}
+    								},
+    								"button": {
+    									"font-family": "Arial, sans-serif",
+    									"color": "#000000",
+    									":hover": {
+    										"color": "#000000",
+    										"background-color": "#c9c9c9"
+    									},
+    									"background-color": "#dfdfdf",
+    									":focus": { "background-color": "#c9c9c9" }
+    								}
+    							},
+    							"buttonDestination": "modal",
+    							"contents": { "options": false },
+    							"text": { "button": "View product" }
+    						},
+    						"productSet": {
+    							"styles": {
+    								"products": {
+    									"@media (min-width: 601px)": { "margin-left": "-20px" }
+    								}
+    							}
+    						},
+    						"modalProduct": {
+    							"contents": {
+    								"img": false,
+    								"imgWithCarousel": true,
+    								"button": false,
+    								"buttonWithQuantity": true
+    							},
+    							"styles": {
+    								"product": {
+    									"@media (min-width: 601px)": {
+    										"max-width": "100%",
+    										"margin-left": "0px",
+    										"margin-bottom": "0px"
+    									}
+    								},
+    								"button": {
+    									"font-family": "Arial, sans-serif",
+    									"color": "#000000",
+    									":hover": {
+    										"color": "#000000",
+    										"background-color": "#c9c9c9"
+    									},
+    									"background-color": "#dfdfdf",
+    									":focus": { "background-color": "#c9c9c9" }
+    								},
+    								"title": { "color": "#000000" },
+    								"price": { "color": "#000000" },
+    								"compareAt": { "color": "#000000" },
+    								"unitPrice": { "color": "#000000" },
+    								"description": { "color": "#000000" }
+    							},
+    							"text": { "button": "Add to cart" }
+    						},
+    						"cart": {
+    							"styles": {
+    								"button": {
+    									"font-family": "Arial, sans-serif",
+    									"color": "#000000",
+    									":hover": {
+    										"color": "#000000",
+    										"background-color": "#c9c9c9"
+    									},
+    									"background-color": "#dfdfdf",
+    									":focus": { "background-color": "#c9c9c9" }
+    								},
+    								"title": { "color": "#000000" },
+    								"header": { "color": "#000000" },
+    								"lineItems": { "color": "#000000" },
+    								"subtotalText": { "color": "#000000" },
+    								"subtotal": { "color": "#000000" },
+    								"notice": { "color": "#000000" },
+    								"currency": { "color": "#000000" },
+    								"close": {
+    									"color": "#000000",
+    									":hover": { "color": "#000000" }
+    								},
+    								"empty": { "color": "#000000" },
+    								"noteDescription": { "color": "#000000" },
+    								"discountText": { "color": "#000000" },
+    								"discountIcon": { "fill": "#000000" },
+    								"discountAmount": { "color": "#000000" }
+    							},
+    							"text": {
+    								"total": "Subtotal",
+    								"button": "Checkout"
+    							}
+    						},
+    						"toggle": {
+    							"styles": {
+    								"toggle": {
+    									"font-family": "Arial, sans-serif",
+    									"background-color": "#dfdfdf",
+    									":hover": { "background-color": "#c9c9c9" },
+    									":focus": { "background-color": "#c9c9c9" }
+    								},
+    								"count": {
+    									"color": "#000000",
+    									":hover": { "color": "#000000" }
+    								},
+    								"iconPath": { "fill": "#000000" }
+    							}
+    						},
+    						"lineItem": {
+    							"styles": {
+    								"variantTitle": { "color": "#000000" },
+    								"title": { "color": "#000000" },
+    								"price": { "color": "#000000" },
+    								"fullPrice": { "color": "#000000" },
+    								"discount": { "color": "#000000" },
+    								"discountIcon": { "fill": "#000000" },
+    								"quantity": { "color": "#000000" },
+    								"quantityIncrement": {
+    									"color": "#000000",
+    									"border-color": "#000000"
+    								},
+    								"quantityDecrement": {
+    									"color": "#000000",
+    									"border-color": "#000000"
+    								},
+    								"quantityInput": {
+    									"color": "#000000",
+    									"border-color": "#000000"
+    								}
+    							}
+    						}
+    					}
+    				});
+    			});
+    		}
+    	})();
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<ShopifyCollectionButton> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({ product, Product });
-    	return [product];
+    	return [];
     }
 
-    class App extends SvelteComponentDev {
+    class ShopifyCollectionButton extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
     		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
-    			tagName: "App",
+    			tagName: "ShopifyCollectionButton",
     			options,
     			id: create_fragment$1.name
+    		});
+    	}
+    }
+
+    /* src/App.svelte generated by Svelte v3.31.0 */
+
+    function create_fragment$2(ctx) {
+    	const block = {
+    		c: noop,
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: noop,
+    		p: noop,
+    		i: noop,
+    		o: noop,
+    		d: noop
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$2.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$2($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("App", slots, []);
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$capture_state = () => ({ Product, ShopifyCollectionButton });
+    	return [];
+    }
+
+    class App extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "App",
+    			options,
+    			id: create_fragment$2.name
     		});
     	}
     }
