@@ -2,8 +2,16 @@
 
     import { request } from '../utilities/storefront.js';
     let load = request(`{
-		shop {
-			name
+		products(first: 50) {
+			edges {
+				node {
+					id
+					title
+					description
+					productType
+					vendor
+				}
+			}
 		}
     }`);
 
