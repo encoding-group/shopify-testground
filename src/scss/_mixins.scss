@@ -13,7 +13,7 @@ $border: border();
 
 @mixin border{
 	border: border();
-	border-radius: 2em;
+	border-radius: 1em;
 }
 
 @mixin grid {

@@ -16,7 +16,6 @@ html {
 body {
 	color: $black;
 	background-color: $white;
-	padding: 2rem;
 }
 
 input, button {
@@ -38,4 +37,5 @@ pre {
 	border-radius: 1em;
 	padding: 1em;
 	font-family: monospace;
+	overflow-x: auto;
 }
