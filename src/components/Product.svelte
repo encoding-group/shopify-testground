@@ -1,48 +1,23 @@
 <script>
 
+    import { productData } from '../utilities/productData.js';
+
     export let product;
 
-    /*
-    id
-    title
-    description
-    productType
-    vendor
-    */
+    let data = productData( product );
+    console.log( data );
 
 </script>
 
 <article>
-    <div>
-
-        <figure>
-            <!-- <img alt="T-Shirt" src="{product.image}" /> -->
-        </figure>
-
-    </div>
-    <div>
-
-        <h1>{product.title}</h1>
-
-        <p>{product.description}</p>
-
-    </div>
+    <pre>{JSON.stringify(data, null, 4)}</pre>
 </article>
 
 <style lang="scss">
 
     article {
         @include border;
-        @include grid;
-        margin-bottom: 2rem;
-    }
-
-    h1 {
-        margin-bottom: 1rem;
-    }
-
-    .buy {
-        margin-top: 2rem;
+        padding: 1rem;
     }
 
 </style>

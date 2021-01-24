@@ -1,11 +1,24 @@
 <script>
 
-  import Button from "./technologies/buy-button/Button.svelte";
+  import ShopifyBuy from '@shopify/buy-button-js';
+  import Products from './components/Products.svelte';
+
+  export let domain;
+  export let token;
+
+  const client = ShopifyBuy.buildClient({
+    domain: `${domain}.myshopify.com`,
+    storefrontAccessToken: token
+  });
 
 </script>
 
-<Button />
+{#await client.product.fetchAll()}
+	<p>Loading</p>
+{:then products}
 
-<style lang="scss">
+	<Products {products} />
 
-</style>
+{:catch error}
+	<p>Error</p>
+{/await}
