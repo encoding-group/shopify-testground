@@ -1,16 +1,10 @@
 <script>
 
-  import Product from "./components/Product.svelte";
-  import CollectionButton from "./components/CollectionButton.svelte";
-  import Storefront from "./components/Storefront.svelte";
-  import Buy from "./components/Buy.svelte";
+  import Button from "./technologies/buy-button/Button.svelte";
 
 </script>
 
-<!-- <Product /> -->
-<!-- <CollectionButton /> -->
-<!-- <Storefront /> -->
-<Buy />
+<Button />
 
 <style lang="scss">
 
