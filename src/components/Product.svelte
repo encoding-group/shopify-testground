@@ -1,5 +1,7 @@
 <script>
 
+    import Button from './Button.svelte';
+
     export let product;
     console.log( product );
 
@@ -13,13 +15,13 @@
 
     <p>[Price] EUR</p>
 
-    <div>[Attributes (Material, Size, Color, ...)]</div>
+    <p>[Attributes (Material, Size, Color, ...)]</p>
 
-    <button>Add To Cart</button>
+    <Button id={product.id} />
 
     <p>[Small notes about payment and shipping]</p>
 
-    <div>[Details (Care instructions, About brand, ...)]</div>
+    <p>[Details (Care instructions, About brand, ...)]</p>
 
     <button on:click={()=>{ showData = !showData }}>Toggle Data</button>
     {#if showData}
@@ -33,6 +35,10 @@
     article {
         @include border;
         padding: 1rem;
+    }
+
+    p {
+        margin: 1rem 0;
     }
 
 </style>

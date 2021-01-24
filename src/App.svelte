@@ -6,14 +6,14 @@
   export let domain;
   export let token;
 
-  const client = ShopifyBuy.buildClient({
+  window.shopify = ShopifyBuy.buildClient({
     domain: `${domain}.myshopify.com`,
     storefrontAccessToken: token
   });
 
 </script>
 
-{#await client.product.fetchAll()}
+{#await window.shopify.product.fetchAll()}
 	<p>Loading</p>
 {:then products}
 
