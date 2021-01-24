@@ -2,7 +2,7 @@
 
   import { onMount } from 'svelte';
   import ShopifyBuy from '@shopify/buy-button-js';
-  // import { options } from './options.js';
+  import { options } from './options.js';
 
   var client = ShopifyBuy.buildClient({
     domain: `encoding-group.myshopify.com`,
@@ -10,17 +10,24 @@
   });
 
   let element;
-  var ui = ShopifyBuy.UI.init(client);
+  let component;
+  let ui = ShopifyBuy.UI.init(client);
+  console.log( ui );
 
   onMount(()=>{
 
     ui.createComponent('product', {
       id: '6243604725953',
       node: element,
-      // options: options
+      options: options
     });
 
   });
+
+  function openCart(){
+    console.log( ui.openCart );
+    ui.openCart();
+  }
 
 
 </script>
