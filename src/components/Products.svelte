@@ -1,25 +1,22 @@
 <script>
 
-    import { productData } from '../utilities/productData.js';
     import Product from './Product.svelte';
+    import Debug from './Debug.svelte';
 
     export let products;
-    console.log( products );
 
 </script>
 
 <ul>
     {#each products as product}
         <li>
-            <Product product={productData( product )} />
+            <Product {product} />
         </li>
     {/each}
 </ul>
 
-<style lang="scss">
+<Debug data={products}>Products</Debug>
 
-    ul {
-        @include grid;
-    }
+<style lang="scss">
 
 </style>

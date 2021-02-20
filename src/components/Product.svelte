@@ -1,44 +1,73 @@
 <script>
 
-    import Button from './Button.svelte';
+    import Debug from './Debug.svelte';
 
     export let product;
-    console.log( product );
-
-    let showData = false;
 
 </script>
 
 <article>
 
-    <h1>{product.title}</h1>
+    <div className="Product">
 
-    <p>[Price] EUR</p>
+        <h1>{product.title}</h1>
 
-    <p>[Attributes (Material, Size, Color, ...)]</p>
+        <dl>
+            <dt>Type</dt>
+            <dd>{product.productType}</dd>
+            <dt>Vendor</dt>
+            <dd>{product.vendor}</dd>
+            <dt>Description</dt>
+            <dd>{@html product.description}</dd>
+            <dt>Handle</dt>
+            <dd>{product.handle}</dd>
+            <dt>ID</dt>
+            <dd>{product.id}</dd>
+        </dl>
 
-    <Button id={product.id} />
+        <!-- {#if product.images.length > 0}
+            <img src={variantImage.src} alt={`${product.title} product shot`}/>
+        {/if} -->
 
-    <p>[Small notes about payment and shipping]</p>
 
-    <p>[Details (Care instructions, About brand, ...)]</p>
+        <!-- <span className="Product__price">${variant.price}</span> -->
 
-    <button on:click={()=>{ showData = !showData }}>Toggle Data</button>
-    {#if showData}
-        <pre>{JSON.stringify(product, null, 4)}</pre>
-    {/if}
+        <!-- {variantSelectors} -->
+
+        <!-- <label className="Product__option">
+          Quantity
+          <input min="1" type="number" defaultValue={variantQuantity} onChange={this.handleQuantityChange}></input>
+        </label>
+
+        <button className="Product__buy button" onClick={() => this.props.addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button> -->
+
+    </div>
+
+    <Debug data={product}>Product</Debug>
 
 </article>
 
 <style lang="scss">
 
     article {
-        @include border;
+        background-color: darkkhaki;
+        border-radius: 0.5rem;
+        margin: 1rem;
         padding: 1rem;
     }
 
-    p {
-        margin: 1rem 0;
+    h1 {
+        margin-bottom: 1rem;
+    }
+    dl {
+        margin-bottom: 1rem;
+        dt {
+            font-weight: bold;
+        }
+        dd {
+            margin-bottom: 0.5em;
+            margin-left: 0.5em;
+        }
     }
 
 </style>
