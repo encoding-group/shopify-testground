@@ -4,18 +4,21 @@
     import Debug from './Debug.svelte';
 
     export let products;
+    export let client;
+    export let addVariantToCart;
 
 </script>
 
 <ul>
-    {#each products as product}
+    {#each products.slice(0,2) as product}
         <li>
-            <Product {product} />
+            <Product {product}
+                key={product.id.toString()}
+                {client}
+                {addVariantToCart} />
         </li>
     {/each}
 </ul>
-
-<Debug data={products}>Products</Debug>
 
 <style lang="scss">
 

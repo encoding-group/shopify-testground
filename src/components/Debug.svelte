@@ -27,6 +27,7 @@
         border-radius: 0.5rem;
         color: #000;
         padding: 0.5rem 1rem;
+        margin-top: 1rem;
     }
     header {
         display: flex;
