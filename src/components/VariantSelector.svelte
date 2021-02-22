@@ -3,10 +3,8 @@
     import Product from './Product.svelte';
 
     export let option;
-
-    function handleOptionChange(){
-        console.log('handleOptionChange()');
-    }
+    export let handleOptionChange;
+    export let key;
 
 </script>
 

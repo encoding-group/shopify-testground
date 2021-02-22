@@ -4,19 +4,21 @@
     import Debug from './Debug.svelte';
 
     export let product;
+    export let client;
+    export let addVariantToCart;
+    export let key;
 
     let defaultOptionValues = () => {
         for (const selector of product.options) {
             defaultOptionValues[selector.name] = selector.values[0].value;
         }
     };
-    let state = { selectedOptions: defaultOptionValues };
+    let selectedOptions = defaultOptionValues;
     let variantImage = state.selectedVariantImage || product.images[0];
     let variant = state.selectedVariant || product.variants[0];
     let variantQuantity = state.selectedVariantQuantity || 1;
 
     function findImage(images, variantId) {
-        console.log(`findImage()`);
         const primary = images[0];
 
         const image = images.filter((image)=>{
@@ -27,28 +29,16 @@
     }
 
     function handleOptionChange(event) {
-        console.log(`handleOptionChange()`, event);
-        const target = event.target
+        const target = event.target;
         let selectedOptions = this.state.selectedOptions;
         selectedOptions[target.name] = target.value;
 
-        const selectedVariant = this.props.client.product.helpers.variantForOptions(this.props.product, selectedOptions)
-
-        this.setState({
-            selectedVariant: selectedVariant,
-            selectedVariantImage: selectedVariant.attrs.image
-        });
+        selectedVariant = client.product.helpers.variantForOptions(product, selectedOptions);
+        selectedVariantImage = selectedVariant.attrs.image;
     }
 
     function handleQuantityChange(event) {
-        console.log(`handleQuantityChange()`, event);
-        this.setState({
-            selectedVariantQuantity: event.target.value
-        });
-    }
-
-    function addVariantToCart(id, quantity){
-        console.log(`addVariantToCart(${id}, ${quantity})`);
+        selectedVariantQuantity = event.target.value;
     }
 
 </script>
@@ -84,9 +74,9 @@
 
     {#each product.options as option}
         <VariantSelector
-            handleOptionChange={handleOptionChange}
+            {handleOptionChange}
+            {option}
             key={option.id.toString()}
-            option={option}
         />
     {/each}
 
