@@ -1,9 +1,8 @@
+import App from './App.svelte';
 import './scss/global.scss';
 
-import App from './App.svelte';
-
 const app = new App({
-	target: document.body
+	target: document.body,
 });
 
 export default app;
