@@ -3,20 +3,16 @@
     import Product from './Product.svelte';
 
     export let item;
+    export let updateQuantityInCart;
+    export let removeLineItemInCart;
+    export let key;
 
     function decrementQuantity(id){
-        console.log(`updateQuantityInCart(${id}, ${item.quantity - 1})`);
-        // updateQuantityInCart(id, item.quantity - 1);
+        updateQuantityInCart(id, item.quantity - 1);
     }
 
     function incrementQuantity(id){
-        console.log(`updateQuantityInCart(${id}, ${item.quantity + 1})`);
-        // updateQuantityInCart(id, item.quantity + 1);
-    }
-
-    function removeLineItemInCart(id){
-        console.log(`removeLineItemInCart(${id})`);
-        // removeLineItemInCart(id);
+        updateQuantityInCart(id, item.quantity + 1);
     }
 
     $: price = (item.quantity * item.variant.price).toFixed(2);

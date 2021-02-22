@@ -3,49 +3,59 @@
     import Item from './CartItem.svelte';
 
     export let checkout;
+    export let showCart;
+    export let handleCartClose;
+    export let updateQuantityInCart;
+    export let removeLineItemInCart;
 
     function openCheckout(){
         window.open(checkout.webUrl);
     }
-    function handleCartClose(){
-        console.log(`handleCartClose()`);
-    }
-
-    export let open;
 
 </script>
 
-<div class="wrapper">
-    <div class="cart" class:open>
+{#if showCart}
+    <div class="wrapper">
+        <div class="cart">
 
-        <header>
-            <h2>Your cart</h2>
-            <button on:click={handleCartClose} class="close">×</button>
-        </header>
+            <div class="close">
+                <button on:click={handleCartClose}>×</button>
+            </div>
 
-        <ul>
-            {#each checkout.lineItems as item}
-                <Item />
-            {/each}
-        </ul>
+            <header>
+                <h2>Your cart</h2>
+            </header>
 
-        <footer>
-            <dl class="subtotal">
-                <dt>Subtotal</dt>
-                <dd>{checkout.subtotalPrice}</dd>
-            </dl>
-            <dl class="taxes">
-                <dt>Taxes</dt>
-                <dd>{checkout.totalTax}</dd>
-            </dl>
-            <dl class="subtotal">
-                <dt>Total</dt>
-                <dd>{checkout.subtotalPrice}</dd>
-            </dl>
-            <button class="checkout" on:click={openCheckout}>Checkout</button>
-        </footer>
+            <ul>
+                {#each checkout.lineItems as item}
+                    <Item
+                        {updateQuantityInCart}
+                        {removeLineItemInCart}
+                        {item}
+                        key={item.id.toString()}
+                    />
+                {/each}
+            </ul>
+
+            <footer>
+                <dl class="subtotal">
+                    <dt>Subtotal</dt>
+                    <dd>{checkout.subtotalPrice}</dd>
+                </dl>
+                <dl class="taxes">
+                    <dt>Taxes</dt>
+                    <dd>{checkout.totalTax}</dd>
+                </dl>
+                <dl class="subtotal">
+                    <dt>Total</dt>
+                    <dd>{checkout.subtotalPrice}</dd>
+                </dl>
+                <button class="checkout" on:click={openCheckout}>Checkout</button>
+            </footer>
+
+        </div>
     </div>
-</div>
+{/if}
 
 <style lang="scss">
 
@@ -66,6 +76,13 @@
         background-color: cornflowerblue;
         border-radius: 1rem;
         padding: 1rem;
+    }
+
+    .close {
+        position: absolute;
+        padding: 1rem;
+        top: 1rem;
+        right: 1rem;
     }
 
 </style>
