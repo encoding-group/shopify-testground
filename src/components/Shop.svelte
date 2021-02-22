@@ -59,13 +59,13 @@
 
 <main>
 
-  <header>
+  {#if !showCart}
+    <div class="open-cart">
+      <button on:click={()=> showCart = true}>Open cart</button>
+    </div>
+  {/if}
 
-    {#if !showCart}
-      <div>
-        <button on:click={()=> showCart = true}>Open cart</button>
-      </div>
-    {/if}
+  <header>
 
     <div>
       <h1>{shop.name}: Svelte Example</h1>
@@ -97,6 +97,13 @@
   }
   header {
     margin: 1rem;
+  }
+
+  .open-cart {
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding: 1rem;
   }
 
 </style>

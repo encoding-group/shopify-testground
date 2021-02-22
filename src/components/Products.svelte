@@ -13,9 +13,10 @@
     {#each products.slice(0,2) as product}
         <li>
             <Product {product}
-                key={product.id.toString()}
                 {client}
-                {addVariantToCart} />
+                {addVariantToCart}
+                key={product.id.toString()}
+                />
         </li>
     {/each}
 </ul>
