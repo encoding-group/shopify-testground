@@ -49,51 +49,57 @@
 
 <article>
 
-    <h1>{product.title}</h1>
-
     {#if product.images.length}
-        <img src={variantImage.src} alt={`${product.title} product shot`}/>
+        <figure>
+            <img src={variantImage.src} alt={`${product.title} product shot`}/>
+        </figure>
     {/if}
 
-    <dl>
+    <div class="details">
 
-        <dt>Type</dt>
-        <dd>{product.productType}</dd>
+        <h1>{product.title}</h1>
 
-        <dt>Vendor</dt>
-        <dd>{product.vendor}</dd>
+        <dl>
 
-        <dt>Description</dt>
-        <dd>{@html product.description}</dd>
+            <dt>Type</dt>
+            <dd>{product.productType}</dd>
 
-        <dt>Handle</dt>
-        <dd>{product.handle}</dd>
+            <dt>Vendor</dt>
+            <dd>{product.vendor}</dd>
 
-        <dt>ID</dt>
-        <dd>{product.id}</dd>
+            <dt>Description</dt>
+            <dd>{@html product.description}</dd>
 
-    </dl>
+            <dt>Handle</dt>
+            <dd>{product.handle}</dd>
 
-    <span class="price">${variant.price}</span>
+            <dt>ID</dt>
+            <dd>{product.id}</dd>
 
-    {#each product.options as option}
-        <VariantSelector
-            {handleOptionChange}
-            {option}
-            key={option.id.toString()}
-        />
-    {/each}
+        </dl>
 
-    <label class="option">
-        Quantity
-        <input min="1" type="number" value={variantQuantity} on:change={handleQuantityChange} />
-    </label>
+        <span class="price">${variant.price}</span>
 
-    <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+        {#each product.options as option}
+            <VariantSelector
+                {handleOptionChange}
+                {option}
+                key={option.id.toString()}
+            />
+        {/each}
 
-    <Debug data={product}>Product</Debug>
+        <label class="option">
+            Quantity
+            <input min="1" type="number" value={variantQuantity} on:change={handleQuantityChange} />
+        </label>
+
+        <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+
+    </div>
 
 </article>
+
+<Debug data={product}>Product</Debug>
 
 <style lang="scss">
 
@@ -102,10 +108,15 @@
         border-radius: 0.5rem;
         margin: 1rem;
         padding: 1rem;
-    }
-
-    img {
-        width: 8rem;
+        display: flex;
+        > figure {
+            width: 20%;
+            flex: 0 1 auto;
+            margin-right: 1rem;
+        }
+        > .details {
+            flex: 1;
+        }
     }
 
     h1 {
