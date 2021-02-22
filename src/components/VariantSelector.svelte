@@ -8,12 +8,11 @@
 
 </script>
 
-<select name={option.name} key={option.name}
-    onChange={handleOptionChange} >
+<select name={option.name} key={option.name} on:change={handleOptionChange} >
 
-        {#each option.values as value}
-            <option {value} key={`${option.name}-${value}`}>{value}</option>
-        {/each}
+    {#each option.values as value}
+        <option {value} key={`${option.name}-${value}`}>{value}</option>
+    {/each}
 
 </select>
 

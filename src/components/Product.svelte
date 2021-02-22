@@ -8,20 +8,18 @@
     export let addVariantToCart;
     export let key;
 
-    let defaultOptionValues = () => {
-        for (const selector of product.options) {
-            defaultOptionValues[selector.name] = selector.values[0].value;
-        }
-    };
-    let selectedOptions = defaultOptionValues;
-    let variantImage = state.selectedVariantImage || product.images[0];
-    let variant = state.selectedVariant || product.variants[0];
-    let variantQuantity = state.selectedVariantQuantity || 1;
+    let defaultOptionValues = {};
+    product.options.forEach((selector) => {
+        defaultOptionValues[selector.name] = selector.values[0].value;
+    });
+
+    let selection = { selectedOptions: defaultOptionValues };
+    console.log( selection );
 
     function findImage(images, variantId) {
         const primary = images[0];
 
-        const image = images.filter((image)=>{
+        const image = images.filter(function (image) {
             return image.variant_ids.includes(variantId);
         })[0];
 
@@ -29,17 +27,23 @@
     }
 
     function handleOptionChange(event) {
-        const target = event.target;
-        let selectedOptions = this.state.selectedOptions;
+        const target = event.target
+        let selectedOptions = selection.selectedOptions;
         selectedOptions[target.name] = target.value;
 
-        selectedVariant = client.product.helpers.variantForOptions(product, selectedOptions);
-        selectedVariantImage = selectedVariant.attrs.image;
+        const selectedVariant = client.product.helpers.variantForOptions(product, selectedOptions);
+
+        selection.selectedVariant = selectedVariant;
+        selection.selectedVariantImage = selectedVariant.attrs.image;
     }
 
     function handleQuantityChange(event) {
-        selectedVariantQuantity = event.target.value;
+        selection.selectedVariantQuantity = event.target.value;
     }
+
+    $: variantImage = selection.selectedVariantImage || product.images[0];
+    $: variant = selection.selectedVariant || product.variants[0];
+    $: variantQuantity = selection.selectedVariantQuantity || 1;
 
 </script>
 
@@ -85,7 +89,7 @@
         <input min="1" type="number" value={variantQuantity} on:change={handleQuantityChange} />
     </label>
 
-    <button class="buy" onClick={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+    <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
 
     <Debug data={product}>Product</Debug>
 

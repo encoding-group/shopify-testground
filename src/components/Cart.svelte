@@ -85,4 +85,15 @@
         right: 1rem;
     }
 
+    footer {
+        margin-top: 0.5rem;
+        dl {
+            margin: 0.5rem 0;
+            + dl {
+                padding-top: 0.5rem;
+                border-top: 1px solid palevioletred;
+            }
+        }
+    }
+
 </style>

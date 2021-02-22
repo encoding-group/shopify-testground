@@ -27,28 +27,32 @@
         </figure>
     {/if}
 
-    <div>
+    <div class="details">
 
         <div>
             <h3>
-                {item.variant.title}
+                {item.title}
             </h3>
             <h4>
-                {item.title}
+                {item.variant.title}
             </h4>
         </div>
 
-        <div>
-            <div class="quantity">
-                <button on:click={() => decrementQuantity(item.id)}>-</button>
-                <span>{item.quantity}</span>
-                <button on:click={() => incrementQuantity(item.id)}>+</button>
-            </div>
-            <span class="price">
-                {price}
-            </span>
+        <div class="options">
 
-            <button class="remove" on:click={()=> removeLineItemInCart(item.id)}>×</button>
+            <div class="quantity">
+                <button title="Buy less" on:click={() => decrementQuantity(item.id)}>-</button>
+                <span>{item.quantity}</span>
+                <button title="Buy more" on:click={() => incrementQuantity(item.id)}>+</button>
+            </div>
+
+            <div class="price">
+                <span>{price}</span>
+            </div>
+
+            <div>
+                <button class="remove" title="Remove {item.title} from cart" on:click={()=> removeLineItemInCart(item.id)}>×</button>
+            </div>
 
         </div>
 
@@ -57,5 +61,34 @@
 </li>
 
 <style lang="scss">
+
+    li {
+        margin: 1rem 0;
+        display: flex;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid palevioletred;
+    }
+
+    figure {
+        margin-right: 1rem;
+        width: 8rem;
+        flex: 0 1 auto;
+    }
+    .details {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        > div + div {
+            margin-left: 1rem;
+        }
+    }
 
 </style>
