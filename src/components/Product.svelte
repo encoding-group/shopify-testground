@@ -1,6 +1,7 @@
 <script>
 
     import VariantSelector from './VariantSelector.svelte';
+    import QuantitySelector from './QuantitySelector.svelte';
     import Debug from './Debug.svelte';
 
     export let product;
@@ -14,7 +15,6 @@
     });
 
     let selection = { selectedOptions: defaultOptionValues };
-    console.log( selection );
 
     function findImage(images, variantId) {
         const primary = images[0];
@@ -38,7 +38,7 @@
     }
 
     function handleQuantityChange(event) {
-        selection.selectedVariantQuantity = event.target.value;
+        selection.selectedVariantQuantity = event.detail;
     }
 
     $: variantImage = selection.selectedVariantImage || product.images[0];
@@ -78,22 +78,23 @@
 
         </dl>
 
-        <span class="price">{variant.priceV2.currencyCode} {variant.price}</span>
+        <div class="buy">
 
-        {#each product.options as option}
-            <VariantSelector
-                {handleOptionChange}
-                {option}
-                key={option.id.toString()}
-            />
-        {/each}
+            <span class="price">{variant.priceV2.currencyCode} {variant.price}</span>
 
-        <label class="option">
-            Quantity
-            <input min="1" type="number" value={variantQuantity} on:change={handleQuantityChange} />
-        </label>
+            {#each product.options as option}
+                <VariantSelector
+                    {handleOptionChange}
+                    {option}
+                    key={option.id.toString()}
+                />
+            {/each}
 
-        <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+            <QuantitySelector value={variantQuantity} on:change={handleQuantityChange} />
+
+            <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+
+        </div>
 
     </div>
 
@@ -107,7 +108,7 @@
 <style lang="scss">
 
     article {
-        background-color: cadetblue;
+        background-color: royalblue;
         border-radius: 0.5rem;
         margin: 1rem;
         padding: 1rem;
@@ -134,6 +135,12 @@
             margin-bottom: 0.5em;
             margin-left: 0.5em;
         }
+    }
+
+    .buy {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
 </style>

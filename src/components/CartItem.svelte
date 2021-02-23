@@ -1,20 +1,12 @@
 <script>
 
-    import Product from './Product.svelte';
+    import QuantitySelector from './QuantitySelector.svelte';
     import Debug from './Debug.svelte';
 
     export let item;
     export let updateQuantityInCart;
     export let removeLineItemInCart;
     export let key;
-
-    function decrementQuantity(id){
-        updateQuantityInCart(id, item.quantity - 1);
-    }
-
-    function incrementQuantity(id){
-        updateQuantityInCart(id, item.quantity + 1);
-    }
 
     $: price = (item.quantity * item.variant.price).toFixed(2);
     let currencyCode = item.variant.priceV2.currencyCode;
@@ -42,11 +34,7 @@
 
         <div class="options">
 
-            <div class="quantity">
-                <button title="Buy less" on:click={() => decrementQuantity(item.id)}>-</button>
-                <span>{item.quantity}</span>
-                <button title="Buy more" on:click={() => incrementQuantity(item.id)}>+</button>
-            </div>
+            <QuantitySelector value={item.quantity} on:change={(event) => updateQuantityInCart(item.id, event.detail)} />
 
             <div class="price">
                 <span>{currencyCode} {price}</span>
