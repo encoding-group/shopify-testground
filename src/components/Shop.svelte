@@ -4,6 +4,7 @@
   import { client } from './client.js';
   import Products from './Products.svelte';
   import Cart from './Cart.svelte';
+  import Debug from './Debug.svelte';
 
   let showCart = false;
   let checkout = { lineItems: [] };
@@ -68,9 +69,13 @@
   <header>
 
     <div>
-      <h1>{shop.name}: Svelte Example</h1>
-      <h2>{shop.description}</h2>
+      <h1>{shop.name}</h1>
+      {#if shop.description}
+        <h2>{shop.description}</h2>
+      {/if}
     </div>
+
+    <Debug data={shop}>Shop</Debug>
 
   </header>
 

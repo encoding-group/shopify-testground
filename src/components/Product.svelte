@@ -78,7 +78,7 @@
 
         </dl>
 
-        <span class="price">${variant.price}</span>
+        <span class="price">{variant.price}</span>
 
         {#each product.options as option}
             <VariantSelector
@@ -97,9 +97,12 @@
 
     </div>
 
+    <div class="full">
+        <Debug data={product}>Product</Debug>
+    </div>
+
 </article>
 
-<Debug data={product}>Product</Debug>
 
 <style lang="scss">
 
@@ -109,6 +112,7 @@
         margin: 1rem;
         padding: 1rem;
         display: flex;
+        flex-wrap: wrap;
         > figure {
             width: 20%;
             flex: 0 1 auto;
@@ -116,6 +120,9 @@
         }
         > .details {
             flex: 1;
+        }
+        > .full {
+            width: 100%;
         }
     }
 

@@ -1,6 +1,7 @@
 <script>
 
     import Item from './CartItem.svelte';
+    import Debug from './Debug.svelte';
 
     export let checkout;
     export let showCart;
@@ -52,6 +53,8 @@
                 </dl>
                 <button class="checkout" on:click={openCheckout}>Checkout</button>
             </footer>
+
+            <Debug data={checkout}>Checkout</Debug>
 
         </div>
     </div>

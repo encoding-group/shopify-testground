@@ -1,6 +1,7 @@
 <script>
 
     import Product from './Product.svelte';
+    import Debug from './Debug.svelte';
 
     export let item;
     export let updateQuantityInCart;
@@ -58,6 +59,10 @@
 
     </div>
 
+    <div class="full">
+        <Debug data={item}>Cart Item</Debug>
+    </div>
+
 </li>
 
 <style lang="scss">
@@ -65,8 +70,12 @@
     li {
         margin: 1rem 0;
         display: flex;
+        flex-wrap: wrap;
         padding-bottom: 1rem;
         border-bottom: 1px solid palevioletred;
+        .full {
+            width: 100%;
+        }
     }
 
     figure {

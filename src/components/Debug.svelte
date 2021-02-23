@@ -9,7 +9,7 @@
 
     <header>
 
-        <h3>Show <slot /> Dataset</h3>
+        <h3><code><slot /></code> Dataset</h3>
         <button on:click={()=> show = !show}>Toggle</button>
 
     </header>
@@ -28,6 +28,12 @@
         color: #000;
         padding: 0.5rem 1rem;
         margin-top: 1rem;
+    }
+    code {
+        background-color: lightpink;
+        border-radius: 0.5em;
+        font-family: monospace;
+        padding: 0.2em 0.5em
     }
     header {
         display: flex;
