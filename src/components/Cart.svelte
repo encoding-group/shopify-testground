@@ -13,6 +13,8 @@
         window.open(checkout.webUrl);
     }
 
+    $: empty = checkout.lineItems.length < 1;
+
 </script>
 
 {#if showCart}
@@ -27,32 +29,40 @@
                 <h2>Your cart</h2>
             </header>
 
-            <ul>
-                {#each checkout.lineItems as item}
-                    <Item
-                        {updateQuantityInCart}
-                        {removeLineItemInCart}
-                        {item}
-                        key={item.id.toString()}
-                    />
-                {/each}
-            </ul>
+            {#if empty}
 
-            <footer>
-                <dl class="subtotal">
-                    <dt>Subtotal</dt>
-                    <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
-                </dl>
-                <dl class="taxes">
-                    <dt>Taxes</dt>
-                    <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
-                </dl>
-                <dl class="subtotal">
-                    <dt>Total</dt>
-                    <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
-                </dl>
-                <button class="checkout" on:click={openCheckout}>Checkout</button>
-            </footer>
+                <p>Your cart is currently empty.</p>
+
+            {:else}
+
+                <ul>
+                    {#each checkout.lineItems as item}
+                        <Item
+                            {updateQuantityInCart}
+                            {removeLineItemInCart}
+                            {item}
+                            key={item.id.toString()}
+                        />
+                    {/each}
+                </ul>
+
+                <footer>
+                    <dl class="subtotal">
+                        <dt>Subtotal</dt>
+                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                    </dl>
+                    <dl class="taxes">
+                        <dt>Taxes</dt>
+                        <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
+                    </dl>
+                    <dl class="subtotal">
+                        <dt>Total</dt>
+                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                    </dl>
+                    <button class="checkout" on:click={openCheckout}>Checkout</button>
+                </footer>
+
+            {/if}
 
             <Debug data={checkout}>Checkout</Debug>
 
