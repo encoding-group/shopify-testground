@@ -9,7 +9,6 @@
     export let key;
 
     $: price = (item.quantity * item.variant.price).toFixed(2);
-    let currencyCode = item.variant.priceV2.currencyCode;
 
 </script>
 
@@ -35,7 +34,7 @@
             <QuantitySelector value={item.quantity} on:change={(event) => updateQuantityInCart(item.id, event.detail)} />
 
             <div class="price">
-                <span>{currencyCode} {price}</span>
+                <span>{item.variant.priceV2.currencyCode} {price}</span>
             </div>
 
             <div>

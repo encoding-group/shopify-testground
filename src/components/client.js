@@ -5,6 +5,6 @@ const sample = {
     domain: 'graphql.myshopify.com'
 };
 
-const volume = {}
+const volume = {};
 
-export const client = Client.buildClient( volume );
+export const client = Client.buildClient( sample );

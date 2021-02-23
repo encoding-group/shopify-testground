@@ -19,7 +19,7 @@
     function findImage(images, variantId) {
         const primary = images[0];
 
-        const image = images.filter(function (image) {
+        const image = images.filter((image) => {
             return image.variant_ids.includes(variantId);
         })[0];
 
@@ -27,7 +27,7 @@
     }
 
     function handleOptionChange(event) {
-        const target = event.target
+        const target = event.target;
         let selectedOptions = selection.selectedOptions;
         selectedOptions[target.name] = target.value;
 
@@ -78,7 +78,7 @@
             <dd>{product.handle}</dd>
 
             <dt>ID</dt>
-            <dd>{product.id}</dd>
+            <dd>{atob(product.id)}</dd>
 
         </dl>
 

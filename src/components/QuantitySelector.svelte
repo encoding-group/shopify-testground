@@ -24,7 +24,7 @@
 </script>
 
 <label>
-    <p>Quantity</p>
+    <p><slot>Quantity</slot></p>
     <button title="Buy less" on:click={decrement}>-</button>
     <input min="1" type="number" bind:value on:change={handleChange} />
     <button title="Buy more" on:click={increment}>+</button>

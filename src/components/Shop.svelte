@@ -1,123 +1,142 @@
 <script>
 
-  import { onMount } from 'svelte';
-  import { client } from './client.js';
-  import Products from './Products.svelte';
-  import Cart from './Cart.svelte';
-  import Debug from './Debug.svelte';
+	import { onMount } from 'svelte';
+	import { client } from './client.js';
+	import Products from './Products.svelte';
+	import Cart from './Cart.svelte';
+	import Debug from './Debug.svelte';
 
-  const collectionId = '234610983111';
-  // const collection = false;
+	function encodeShopifyId( id, type = 'Collection' ){
+		return btoa(`gid://shopify/${type}/${id}`);
+	}
 
-  let showCart = false;
-  let checkout = { lineItems: [] };
-  let products = [];
-  let shop = {};
+	const collectionId = '234610983111';
+	// const collectionId = false;
 
-  onMount(()=>{
-    client.checkout.create().then((res) => {
-      checkout = res;
-    });
-    if( collectionId ){
+	let showCart = false;
+	let checkout = { lineItems: [] };
+	let products = [];
+	let shop = {};
 
-      console.log('atob', atob(collectionId) );
-      console.log('btoa', btoa(collectionId) );
+	onMount(()=>{
 
-      client.collection.fetchWithProducts( btoa(collectionId) ).then((res) => {
-        console.log(res);
-      });
+		// load checkout
+		client.checkout.create().then((res) => {
+			checkout = res;
+		}).catch((error)=>{
+			console.error(error);
+		});
 
-    } else {
-      client.product.fetchAll().then((res) => {
-        products = res;
-      });
-    }
-    client.shop.fetchInfo().then((res) => {
-      shop = res;
-    });
-  });
+		// load shop info
+		client.shop.fetchInfo().then((res) => {
+			shop = res;
+		}).catch((error)=>{
+			console.error(error);
+		});
 
-  function addVariantToCart(variantId, quantity){
-    showCart = true;
-    const lineItemsToAdd = [{variantId, quantity: parseInt(quantity, 10)}];
-    return client.checkout.addLineItems(checkout.id, lineItemsToAdd).then(res => {
-      checkout = res;
-    });
-  }
+		if( collectionId ){
 
-  function updateQuantityInCart(lineItemId, quantity) {
-    const lineItemsToUpdate = [{id: lineItemId, quantity: parseInt(quantity, 10)}];
-    return client.checkout.updateLineItems(checkout.id, lineItemsToUpdate).then(res => {
-      checkout = res;
-    });
-  }
+			// load products from collection
+			client.collection.fetchWithProducts( encodeShopifyId(collectionId) ).then((res) => {
+				products = res.products;
+			}).catch((error)=>{
+				console.error(error);
+			});
 
-  function removeLineItemInCart(lineItemId) {
-    return client.checkout.removeLineItems(checkout.id, [lineItemId]).then(res => {
-      checkout = res;
-    });
-  }
+		} else {
 
-  function handleCartClose(){
-    showCart = false;
-  }
+			// load all products from shop
+			client.product.fetchAll().then((res) => {
+				products = res;
+			}).catch((error)=>{
+				console.error(error);
+			});;
 
-  $: itemsInCart = checkout.lineItems.length;
-  $: totalInCart = checkout.paymentDue;
+		}
+	});
+
+	function addVariantToCart(variantId, quantity){
+		showCart = true;
+		const lineItemsToAdd = [{variantId, quantity: parseInt(quantity, 10)}];
+		return client.checkout.addLineItems(checkout.id, lineItemsToAdd).then(res => {
+			checkout = res;
+		});
+	}
+
+	function updateQuantityInCart(lineItemId, quantity) {
+		const lineItemsToUpdate = [{id: lineItemId, quantity: parseInt(quantity, 10)}];
+		return client.checkout.updateLineItems(checkout.id, lineItemsToUpdate).then(res => {
+			checkout = res;
+		});
+	}
+
+	function removeLineItemInCart(lineItemId) {
+		return client.checkout.removeLineItems(checkout.id, [lineItemId]).then(res => {
+			checkout = res;
+		});
+	}
+
+	function handleCartClose(){
+		showCart = false;
+	}
+
+	$: itemsInCart = checkout.lineItems.length;
+	$: totalInCart = checkout.paymentDue;
 
 </script>
 
 <main>
 
-  {#if !showCart}
-    <div class="open-cart">
-      <button on:click={()=> showCart = true}>Open cart ( {itemsInCart} | {totalInCart} )</button>
-    </div>
-  {/if}
+	{#if !showCart}
+		<div class="cart-button">
+			<button on:click={()=> showCart = true}>Open cart ( {itemsInCart} | {totalInCart} )</button>
+		</div>
+	{/if}
 
-  <header>
+	<header>
 
-    <div>
-      <h1>{shop.name}</h1>
-      {#if shop.description}
-        <h2>{shop.description}</h2>
-      {/if}
-    </div>
+		<div>
+			<h1>{shop.name}</h1>
+			{#if shop.description}
+				<h2>{shop.description}</h2>
+			{/if}
+		</div>
 
-    <Debug data={shop}>Shop</Debug>
+		<Debug data={shop}>Shop</Debug>
 
-  </header>
+	</header>
 
-  <Products
-    {products}
-    {client}
-    {addVariantToCart}
-  />
+	<Products
+		{products}
+		{client}
+		{addVariantToCart}
+	/>
 
-  <Cart
-    {checkout}
-    {showCart}
-    {handleCartClose}
-    {updateQuantityInCart}
-    {removeLineItemInCart}
-  />
+	<Cart
+		{checkout}
+		{showCart}
+		{handleCartClose}
+		{updateQuantityInCart}
+		{removeLineItemInCart}
+	/>
 
 </main>
 
 <style lang="scss">
 
-  main {
-    padding: 1rem;
-  }
-  header {
-    margin: 1rem;
-  }
+	main {
+		padding: 1rem;
+	}
 
-  .open-cart {
-    position: fixed;
-    top: 0;
-    right: 0;
-    padding: 1rem;
-  }
+	header {
+		margin: 1rem;
+	}
+
+	.cart-button {
+		position: fixed;
+		top: 0;
+		right: 0;
+		padding: 1rem;
+	}
 
 </style>
