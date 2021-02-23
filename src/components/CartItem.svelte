@@ -24,12 +24,10 @@
     <div class="details">
 
         <div>
-            <h3>
-                {item.title}
-            </h3>
-            <h4>
-                {item.variant.title}
-            </h4>
+            <h3>{item.title}</h3>
+            {#if item.variant.title !== 'Default Title'}
+                <h4>{item.variant.title}</h4>
+            {/if}
         </div>
 
         <div class="options">

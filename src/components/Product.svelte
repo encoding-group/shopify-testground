@@ -82,13 +82,15 @@
 
             <span class="price">{variant.priceV2.currencyCode} {variant.price}</span>
 
-            {#each product.options as option}
-                <VariantSelector
-                    {handleOptionChange}
-                    {option}
-                    key={option.id.toString()}
-                />
-            {/each}
+            {#if product.options.length > 1}
+                {#each product.options as option}
+                    <VariantSelector
+                        {handleOptionChange}
+                        {option}
+                        key={option.id.toString()}
+                    />
+                {/each}
+            {/if}
 
             <QuantitySelector value={variantQuantity} on:change={handleQuantityChange} />
 
