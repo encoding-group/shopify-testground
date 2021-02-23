@@ -50,9 +50,13 @@
 <article>
 
     {#if product.images.length}
-        <figure>
-            <img src={variantImage.src} alt={`${product.title} product shot`}/>
-        </figure>
+        <div class='gallery'>
+            {#each product.images as image}
+                <figure>
+                    <img src={image.src} alt={`${product.title} product shot`}/>
+                </figure>
+            {/each}
+        </div>
     {/if}
 
     <div class="details">
@@ -116,17 +120,22 @@
         padding: 1rem;
         display: flex;
         flex-wrap: wrap;
-        > figure {
-            width: 20%;
-            flex: 0 1 auto;
-            margin-right: 1rem;
-        }
+        align-items: flex-start;
         > .details {
             flex: 1;
         }
         > .full {
             width: 100%;
         }
+    }
+
+    .gallery {
+        width: 20%;
+        flex: 0 1 auto;
+        margin-right: 1rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
     }
 
     h1 {
