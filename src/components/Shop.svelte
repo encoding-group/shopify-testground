@@ -6,6 +6,9 @@
   import Cart from './Cart.svelte';
   import Debug from './Debug.svelte';
 
+  const collectionId = '234610983111';
+  // const collection = false;
+
   let showCart = false;
   let checkout = { lineItems: [] };
   let products = [];
@@ -15,9 +18,20 @@
     client.checkout.create().then((res) => {
       checkout = res;
     });
-    client.product.fetchAll().then((res) => {
-      products = res;
-    });
+    if( collectionId ){
+
+      console.log('atob', atob(collectionId) );
+      console.log('btoa', btoa(collectionId) );
+
+      client.collection.fetchWithProducts( btoa(collectionId) ).then((res) => {
+        console.log(res);
+      });
+
+    } else {
+      client.product.fetchAll().then((res) => {
+        products = res;
+      });
+    }
     client.shop.fetchInfo().then((res) => {
       shop = res;
     });

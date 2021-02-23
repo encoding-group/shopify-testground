@@ -10,7 +10,7 @@
 </script>
 
 <ul>
-    {#each products.slice(0,2) as product}
+    {#each products as product}
         <li>
             <Product {product}
                 {client}
