@@ -1,11 +1,11 @@
 <script>
 
     import Product from './Product.svelte';
-    import Debug from './Debug.svelte';
 
     export let products;
     export let client;
     export let addVariantToCart;
+    export let loadMore;
 
 </script>
 
@@ -20,6 +20,10 @@
         </li>
     {/each}
 </ul>
+
+<p>Showing {products.length}</p>
+
+<button on:click={loadMore}>Load more</button>
 
 <style lang="scss">
 

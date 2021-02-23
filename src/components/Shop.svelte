@@ -18,6 +18,8 @@
 	let products = [];
 	let shop = {};
 
+	const productsPerPage = 15;
+
 	onMount(()=>{
 
 		// load checkout
@@ -37,7 +39,7 @@
 		if( collectionId ){
 
 			// load products from collection
-			client.collection.fetchWithProducts( encodeShopifyId(collectionId) ).then((res) => {
+			client.collection.fetchWithProducts( encodeShopifyId(collectionId), {productsFirst: productsPerPage} ).then((res) => {
 				products = res.products;
 			}).catch((error)=>{
 				console.error(error);
@@ -45,12 +47,14 @@
 
 		} else {
 
+			console.log( client.product );
+
 			// load all products from shop
-			client.product.fetchAll().then((res) => {
+			client.product.fetchAll( productsPerPage ).then((res) => {
 				products = res;
 			}).catch((error)=>{
 				console.error(error);
-			});;
+			});
 
 		}
 	});
@@ -78,6 +82,10 @@
 
 	function handleCartClose(){
 		showCart = false;
+	}
+
+	function loadMore(){
+		console.log('[ToDo] load more...');
 	}
 
 	$: itemsInCart = checkout.lineItems.length;
@@ -110,6 +118,7 @@
 		{products}
 		{client}
 		{addVariantToCart}
+		{loadMore}
 	/>
 
 	<Cart
