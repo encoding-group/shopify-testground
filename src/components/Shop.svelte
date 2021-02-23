@@ -24,29 +24,21 @@
   });
 
   function addVariantToCart(variantId, quantity){
-    console.log(`addVariantToCart(${variantId},${quantity})`);
-
     showCart = true;
     const lineItemsToAdd = [{variantId, quantity: parseInt(quantity, 10)}];
-
     return client.checkout.addLineItems(checkout.id, lineItemsToAdd).then(res => {
       checkout = res;
     });
   }
 
   function updateQuantityInCart(lineItemId, quantity) {
-    console.log(`updateQuantityInCart(${lineItemId}, ${quantity})`);
-
     const lineItemsToUpdate = [{id: lineItemId, quantity: parseInt(quantity, 10)}];
-
     return client.checkout.updateLineItems(checkout.id, lineItemsToUpdate).then(res => {
       checkout = res;
     });
   }
 
   function removeLineItemInCart(lineItemId) {
-    console.log(`removeLineItemInCart(${lineItemId})`);
-
     return client.checkout.removeLineItems(checkout.id, [lineItemId]).then(res => {
       checkout = res;
     });
@@ -56,13 +48,16 @@
     showCart = false;
   }
 
+  $: itemsInCart = checkout.lineItems.length;
+  $: totalInCart = checkout.paymentDue;
+
 </script>
 
 <main>
 
   {#if !showCart}
     <div class="open-cart">
-      <button on:click={()=> showCart = true}>Open cart</button>
+      <button on:click={()=> showCart = true}>Open cart ( {itemsInCart} | {totalInCart} )</button>
     </div>
   {/if}
 
