@@ -17,6 +17,7 @@
     }
 
     $: price = (item.quantity * item.variant.price).toFixed(2);
+    let currencyCode = item.variant.priceV2.currencyCode;
 
 </script>
 
@@ -48,7 +49,7 @@
             </div>
 
             <div class="price">
-                <span>{price}</span>
+                <span>{currencyCode} {price}</span>
             </div>
 
             <div>

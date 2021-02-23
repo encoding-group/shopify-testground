@@ -78,7 +78,7 @@
 
         </dl>
 
-        <span class="price">{variant.price}</span>
+        <span class="price">{variant.priceV2.currencyCode} {variant.price}</span>
 
         {#each product.options as option}
             <VariantSelector

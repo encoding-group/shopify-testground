@@ -41,15 +41,15 @@
             <footer>
                 <dl class="subtotal">
                     <dt>Subtotal</dt>
-                    <dd>{checkout.subtotalPrice}</dd>
+                    <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
                 </dl>
                 <dl class="taxes">
                     <dt>Taxes</dt>
-                    <dd>{checkout.totalTax}</dd>
+                    <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
                 </dl>
                 <dl class="subtotal">
                     <dt>Total</dt>
-                    <dd>{checkout.subtotalPrice}</dd>
+                    <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
                 </dl>
                 <button class="checkout" on:click={openCheckout}>Checkout</button>
             </footer>
