@@ -4,9 +4,9 @@
 	import { Shopify } from './shopify.js';
 
 	import ShopInfo from './ShopInfo.svelte';
-	// import Products from './Products.svelte';
+	import Products from './Products.svelte';
 	// import Cart from './Cart.svelte';
-	// import Debug from './Debug.svelte';
+	import Debug from './Debug.svelte';
 
 	export let credentials;
 
@@ -16,6 +16,8 @@
 
 <main>
 
+	<Debug data={shop}>Shopify Class</Debug>
+
 	<!-- {#if !showCart}
 		<div class="cart-button">
 			<button on:click={()=> showCart = true}>Open cart ( {itemsInCart} | {totalInCart} )</button>
@@ -24,14 +26,9 @@
 
 	<ShopInfo {shop} />
 
-	<!-- <Products
-		{products}
-		{client}
-		{addVariantToCart}
-		{loadMore}
-	/>
+	<Products {shop} />
 
-	<Cart
+	<!-- <Cart
 		{checkout}
 		{showCart}
 		{handleCartClose}

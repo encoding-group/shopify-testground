@@ -3,24 +3,24 @@
 	import Debug from './Debug.svelte';
 	export let shop;
 
-	let info = shop.fetchShopInfo();
+	let loadInfo = shop.fetchShopInfo();
 
 </script>
 
 <header>
 
 	<div>
-		{#await info}
+		{#await loadInfo}
 			Loading shop info
-		{:then data}
+		{:then info}
 
-			<h1>{data.name}</h1>
+			<h1>{info.name}</h1>
 
-			{#if data.description}
-				<h2>{data.description}</h2>
+			{#if info.description}
+				<h2>{info.description}</h2>
 			{/if}
 
-			<Debug {data}>Shop</Debug>
+			<Debug data={info}>Shop dataset</Debug>
 
 		{:catch error}
 			{error}

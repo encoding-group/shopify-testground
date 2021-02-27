@@ -9,8 +9,6 @@ export class Shopify {
         this._shop = {};
         this._isCartVisible = false;
 
-        // this.fetchShopInfo();
-
     }
 
     /* client */
@@ -26,14 +24,14 @@ export class Shopify {
     }
 
     async fetchShopInfo(){
-        const context = this;
-
-        this._shop = await this._client.shop.fetchInfo();
-            // .reject(( error ) => {
-            //     console.error( error );
-            //     context._shop = {};
-            // });
-        return this._shop;
+        try {
+            this._shop = await this._client.shop.fetchInfo();
+            return this._shop;
+        } catch (error) {
+            console.error( error );
+            this._shop = {};
+            return {};
+        }
     }
 
     /* checkout */
@@ -135,11 +133,16 @@ export class Shopify {
     }
 
     fetchCollection( id ){
-        id = this.encodeId( id );
-        return this._client.collection.fetchWithProducts( id, {productsFirst: this.itemsPerRow} )
-            .reject(( error ) => {
-                console.error( error );
-            });
+        /*
+        * help required, this doesn’t work
+        */
+        let collection = this.encodeId( id );
+        try {
+            return this._client.collection.fetchWithProducts( collection, {productsFirst: this.itemsPerRow} );
+        } catch (error) {
+            console.error( error );
+            return [];
+        }
     }
 
     fetchProducts( ids = [] ){
@@ -149,10 +152,12 @@ export class Shopify {
         //     get all products
         // }
 
-        return this._client.product.fetchAll( this.itemsPerRow )
-            .reject(( error ) => {
-                console.error( error );
-            });
+        try {
+            return this._client.product.fetchAll( this.itemsPerRow );
+        } catch (error) {
+            console.error( error );
+            return [];
+        }
     }
 
 }
