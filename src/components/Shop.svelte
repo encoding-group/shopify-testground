@@ -11,7 +11,6 @@
 	export let credentials;
 
 	let shop = new Shopify( credentials );
-	let shopInfo = shop.fetchShopInfo();
 
 </script>
 
