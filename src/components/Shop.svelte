@@ -5,12 +5,15 @@
 
 	import ShopInfo from './ShopInfo.svelte';
 	import Products from './Products.svelte';
-	// import Cart from './Cart.svelte';
+	import Cart from './Cart.svelte';
 	import Debug from './Debug.svelte';
 
 	export let credentials;
 
 	let shop = new Shopify( credentials );
+	$: isCartVisible = shop.isCartVisible;
+	$: itemsInCart = shop.itemsInCart;
+	$: totalInCart = shop.totalInCart;
 
 </script>
 
@@ -18,23 +21,17 @@
 
 	<Debug data={shop}>Shopify Class</Debug>
 
-	<!-- {#if !showCart}
+	{#if !isCartVisible}
 		<div class="cart-button">
-			<button on:click={()=> showCart = true}>Open cart ( {itemsInCart} | {totalInCart} )</button>
+			<button on:click={()=> shop.showCart()}>Open cart ( {itemsInCart} | {totalInCart} )</button>
 		</div>
-	{/if} -->
+	{/if}
 
 	<ShopInfo {shop} />
 
 	<Products {shop} />
 
-	<!-- <Cart
-		{checkout}
-		{showCart}
-		{handleCartClose}
-		{updateQuantityInCart}
-		{removeLineItemInCart}
-	/> -->
+	<Cart {shop} {isCartVisible} />
 
 </main>
 

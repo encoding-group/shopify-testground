@@ -9,4 +9,4 @@
 
 </script>
 
-<Shop credentials={volume} />
+<Shop credentials={example} />

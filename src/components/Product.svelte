@@ -5,9 +5,9 @@
     import Debug from './Debug.svelte';
 
     export let product;
-    export let client;
-    export let addVariantToCart;
-    export let key;
+    export let shop;
+
+    let key = product.id.toString();
 
     let defaultOptionValues = {};
     product.options.forEach((selector) => {
@@ -17,6 +17,7 @@
     let selection = { selectedOptions: defaultOptionValues };
 
     function findImage(images, variantId) {
+        console.log(`Product.findImage(${images},${variantId})`);
         const primary = images[0];
 
         const image = images.filter((image) => {
@@ -27,17 +28,19 @@
     }
 
     function handleOptionChange(event) {
+        console.log(`Product.handleOptionChange(${event})`);
         const target = event.target;
         let selectedOptions = selection.selectedOptions;
         selectedOptions[target.name] = target.value;
 
-        const selectedVariant = client.product.helpers.variantForOptions(product, selectedOptions);
+        const selectedVariant = shop.client.product.helpers.variantForOptions(product, selectedOptions);
 
         selection.selectedVariant = selectedVariant;
         selection.selectedVariantImage = selectedVariant.attrs.image;
     }
 
     function handleQuantityChange(event) {
+        console.log(`Product.handleQuantityChange(${event})`);
         selection.selectedVariantQuantity = event.detail;
     }
 
@@ -98,7 +101,7 @@
 
             <QuantitySelector value={variantQuantity} on:change={handleQuantityChange} />
 
-            <button class="buy" on:click={() => addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+            <button class="buy" on:click={() => shop.addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
 
         </div>
 

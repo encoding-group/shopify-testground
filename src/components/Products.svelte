@@ -12,6 +12,9 @@
     // let loadProducts = shop.fetchCollection( '234610983111' );
 
     function loadMore(){
+        /*
+        * help required for implementing 'load next page'
+        */
         alert('[Placeholder: Load next page of products]');
     }
 
@@ -24,7 +27,7 @@
     <ul>
         {#each products as product}
             <li>
-                <Product {product} {shop} key={product.id.toString()} />
+                <Product {product} {shop} />
             </li>
         {/each}
     </ul>

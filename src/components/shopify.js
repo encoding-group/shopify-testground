@@ -9,6 +9,8 @@ export class Shopify {
         this._shop = {};
         this._isCartVisible = false;
 
+        this.fetchCheckout();
+
     }
 
     /* client */
@@ -24,6 +26,7 @@ export class Shopify {
     }
 
     async fetchShopInfo(){
+        console.log('Shopify.fetchShopInfo()');
         try {
             this._shop = await this._client.shop.fetchInfo();
             return this._shop;
@@ -49,57 +52,73 @@ export class Shopify {
     }
 
     async fetchCheckout(){
-        const context = this;
-
-        this._checkout = await this._client.checkout.create()
-            .reject(( error ) => {
-                console.error( error );
-                context._checkout = { lineItems: [] };
-            });
-        return this._checkout;
+        console.log('Shopify.fetchCheckout()');
+        try {
+            this._checkout = await this._client.checkout.create();
+            return this._checkout;
+        } catch (error) {
+            console.error( error );
+            this._checkout = { lineItems: [] };
+            return {};
+        }
     }
 
     async addVariantToCart( variantId, quantity ){
+        console.log(`Shopify.addVariantToCart(${atob(variantId)},${quantity})`);
 		this.showCart();
-        const context = this;
+
 		const lineItemsToAdd = [{
             variantId,
             quantity: parseInt(quantity, 10)
         }];
 
-        this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd )
-            .reject(( error ) => {
-                console.error( error );
-                context._checkout = { lineItems: [] };
-            });
-        return this._checkout;
+        try {
+            this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
+            return this._checkout;
+        } catch (error) {
+            console.error( error );
+            this._checkout = { lineItems: [] };
+            return this._checkout;
+        }
 	}
 
     async updateQuantityInCart( lineItemId, quantity ){
-        const context = this;
+        console.log(`Shopify.updateQuantityInCart(${atob(lineItemId)},${quantity})`);
 		const lineItemsToUpdate = [{
             id: lineItemId,
             quantity: parseInt(quantity, 10)
         }];
 
-		this._checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate)
-            .reject(( error ) => {
-                console.error( error );
-                context._checkout = { lineItems: [] };
-            });
-        return this._checkout;
+        try {
+            this._checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
+            return this._checkout;
+        } catch (error) {
+            console.error( error );
+            this._checkout = { lineItems: [] };
+            return this._checkout;
+        }
 	}
 
     async removeLineItemInCart( lineItemId ){
-        const context = this;
-
-		this._checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] )
-            .reject(( error ) => {
-                console.error( error );
-                context._checkout = { lineItems: [] };
-            });
-        return this._checkout;
+        console.log(`Shopify.removeLineItemInCart(${atob(lineItemId)})`);
+        try {
+            this._checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
+            return this._checkout;
+        } catch (error) {
+            console.error( error );
+            this._checkout = { lineItems: [] };
+            return this._checkout;
+        }
 	}
+
+    redirectToCheckout(){
+        console.log('Shopify.redirectToCheckout');
+        window.open( this._checkout.webUrl );
+    }
+
+    get isCartEmpty (){
+        return this._checkout.lineItems.length < 1;
+    }
 
     /* is cart visible? */
 
@@ -107,19 +126,24 @@ export class Shopify {
         return this._isCartVisible;
     }
 
+    // set showCart( set = true ){
+    //     this._isCartVisible = set;
+    // }
+
     showCart(){
+        console.log('Shopify.showCart');
         this._isCartVisible = true;
     }
 
     hideCart(){
+        console.log('Shopify.hideCart');
         this._isCartVisible = false;
     }
 
-    toggleCart( callback ){
+    toggleCart(){
+        console.log('Shopify.toggleCart');
         this._isCartVisible = !this._isCartVisible;
-        if( callback !== undefined ){
-            callback( this._isCartVisible );
-        }
+        return this._isCartVisible;
     }
 
     /* products */
@@ -128,11 +152,16 @@ export class Shopify {
         return 12;
     }
 
+    decodeId( id ){
+        return atob(id);
+    }
+
     encodeId( id, type = 'Collection' ){
         return btoa(`gid://shopify/${type}/${id}`);
     }
 
     fetchCollection( id ){
+        console.log(`Shopify.fetchCollection(${id})`);
         /*
         * help required, this doesn’t work
         */
@@ -146,6 +175,7 @@ export class Shopify {
     }
 
     fetchProducts( ids = [] ){
+        console.log(`Shopify.fetchProducts(${ids})`);
         // if( ids.length > 0 ){
         //     get list of products by specified ids
         // } else {
