@@ -46,7 +46,7 @@
     </div>
 
     <div class="full">
-        <Debug data={item}>Cart Item</Debug>
+        <Debug data={item}>Cart Item dataset</Debug>
     </div>
 
 </li>

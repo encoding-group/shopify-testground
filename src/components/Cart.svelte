@@ -64,7 +64,7 @@
 
             {/if}
 
-            <Debug data={checkout}>Checkout</Debug>
+            <Debug data={checkout}>Checkout dataset</Debug>
 
         </div>
     </div>

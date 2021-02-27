@@ -105,7 +105,7 @@
     </div>
 
     <div class="full">
-        <Debug data={product}>Product</Debug>
+        <Debug data={product}>Product dataset</Debug>
     </div>
 
 </article>
