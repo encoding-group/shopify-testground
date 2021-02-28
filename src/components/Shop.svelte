@@ -10,7 +10,13 @@
 
 	export let credentials;
 
-	let shop = new Shopify( credentials );
+	const shopifyUpdateCallback = (client) => {
+		itemsInCart = client.itemsInCart;
+		totalInCart = client.totalInCart;
+		showCart();
+	}
+
+	let shop = new Shopify( credentials, shopifyUpdateCallback );
 
 	/*
 	* help required: how to make them reactive?

@@ -2,12 +2,13 @@ import Client from 'shopify-buy';
 
 export class Shopify {
 
-    constructor( credentials ){
+    constructor( credentials, updateCallback ){
 
         this._client = Client.buildClient( credentials );
         this._checkout = { lineItems: [] };
         this._shop = {};
         this._isCartVisible = false;
+        this._updateCallback = updateCallback;
 
         this.fetchCheckout();
 
@@ -74,6 +75,7 @@ export class Shopify {
 
         try {
             this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
+            this._updateCallback(this);
             return this._checkout;
         } catch (error) {
             console.error( error );
