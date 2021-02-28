@@ -8,17 +8,17 @@
     function decrement(){
         if( value > 1 ){
             value--;
-            dispatcher("change", value);
+            dispatcher("update", value);
         } else {
             value = 1;
         }
     }
     function increment(){
         value++;
-        dispatcher("change", value);
+        dispatcher("update", value);
     }
-    function handleChange(){
-        dispatcher("change", value);
+    function handleUpdate(){
+        dispatcher("update", value);
     }
 
 </script>
@@ -26,7 +26,7 @@
 <label>
     <p><slot>Quantity</slot></p>
     <button title="Buy less" on:click={decrement}>-</button>
-    <input min="1" type="number" bind:value on:change={handleChange} />
+    <input min="1" type="number" bind:value on:change={handleUpdate} />
     <button title="Buy more" on:click={increment}>+</button>
 </label>
 

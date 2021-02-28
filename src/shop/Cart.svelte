@@ -1,35 +1,37 @@
 <script>
 
-    import Item from './CartItem.svelte';
-    import Debug from './Debug.svelte';
+    import CartItem from './CartItem.svelte';
+    import Debug from './components/Debug.svelte';
 
+    export let shop;
     export let checkout;
-    export let showCart;
-    export let handleCartClose;
-    export let updateQuantityInCart;
-    export let removeLineItemInCart;
+    export let isCartVisible;
 
-    function openCheckout(){
-        window.open(checkout.webUrl);
+    let currency = checkout.currencyCode;
+
+    function handleHideCart(){
+		shop.hideCart();
+	}
+
+    function handleCheckout(){
+        shop.redirectToCheckout();
     }
-
-    $: empty = checkout.lineItems.length < 1;
 
 </script>
 
-{#if showCart}
+{#if isCartVisible}
     <div class="wrapper">
         <div class="cart">
 
             <div class="close">
-                <button on:click={handleCartClose}>×</button>
+                <button on:click={handleHideCart}>×</button>
             </div>
 
             <header>
                 <h2>Your cart</h2>
             </header>
 
-            {#if empty}
+            {#if checkout.lineItems.length < 1}
 
                 <p>Your cart is currently empty.</p>
 
@@ -37,34 +39,29 @@
 
                 <ul>
                     {#each checkout.lineItems as item}
-                        <Item
-                            {updateQuantityInCart}
-                            {removeLineItemInCart}
-                            {item}
-                            key={item.id.toString()}
-                        />
+                        <CartItem {item} {shop} />
                     {/each}
                 </ul>
 
                 <footer>
                     <dl class="subtotal">
                         <dt>Subtotal</dt>
-                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                        <dd>{currency} {checkout.subtotalPrice}</dd>
                     </dl>
                     <dl class="taxes">
                         <dt>Taxes</dt>
-                        <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
+                        <dd>{currency} {checkout.totalTax}</dd>
                     </dl>
                     <dl class="subtotal">
                         <dt>Total</dt>
-                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                        <dd>{currency} {checkout.subtotalPrice}</dd>
                     </dl>
-                    <button class="checkout" on:click={openCheckout}>Checkout</button>
+                    <button class="checkout" on:click={handleCheckout}>Checkout</button>
                 </footer>
 
             {/if}
 
-            <Debug data={checkout}>Checkout</Debug>
+            <Debug data={checkout}>Checkout dataset</Debug>
 
         </div>
     </div>

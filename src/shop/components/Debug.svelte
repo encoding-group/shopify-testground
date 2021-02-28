@@ -9,7 +9,7 @@
 
     <header>
 
-        <h3><code><slot /></code> Dataset</h3>
+        <h3><code><slot /></code></h3>
         <button on:click={()=> show = !show}>Toggle</button>
 
     </header>

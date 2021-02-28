@@ -9,10 +9,9 @@ npm run build
 ```
 
 Resources:
-
 - https://shopify.dev/docs/storefront-api
-- https://shopify.dev/tools/libraries/storefront-api/javascript
-- https://shopify.dev/tutorials/create-a-checkout-with-storefront-api
 - https://shopify.github.io/js-buy-sdk/
+
+Example Applications:
 - https://github.com/Shopify/storefront-api-examples
 - https://github.com/Shopify/storefront-api-examples/tree/master/react-js-buy
