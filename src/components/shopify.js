@@ -2,13 +2,14 @@ import Client from 'shopify-buy';
 
 export class Shopify {
 
-    constructor( credentials, updateCallback ){
+    constructor( credentials, callbacks ){
 
         this._client = Client.buildClient( credentials );
         this._checkout = { lineItems: [] };
         this._shop = {};
         this._isCartVisible = false;
-        this._updateCallback = updateCallback;
+
+        this._callbacks = callbacks;
 
         this.fetchCheckout();
 
@@ -75,7 +76,7 @@ export class Shopify {
 
         try {
             this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
-            this._updateCallback(this);
+            // this._updateCallback(this);
             return this._checkout;
         } catch (error) {
             console.error( error );
@@ -128,23 +129,22 @@ export class Shopify {
         return this._isCartVisible;
     }
 
-    // set showCart( set = true ){
-    //     this._isCartVisible = set;
-    // }
-
     showCart(){
         console.log('Shopify.showCart');
         this._isCartVisible = true;
+        this._callbacks.onToggleCart( this._isCartVisible );
     }
 
     hideCart(){
         console.log('Shopify.hideCart');
         this._isCartVisible = false;
+        this._callbacks.onToggleCart( this._isCartVisible );
     }
 
     toggleCart(){
         console.log('Shopify.toggleCart');
         this._isCartVisible = !this._isCartVisible;
+        this._callbacks.onToggleCart( this._isCartVisible );
         return this._isCartVisible;
     }
 

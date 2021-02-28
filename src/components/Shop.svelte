@@ -10,29 +10,28 @@
 
 	export let credentials;
 
-	const shopifyUpdateCallback = (client) => {
-		itemsInCart = client.itemsInCart;
-		totalInCart = client.totalInCart;
-		showCart();
-	}
+	const callbacks = {
+		// onUpdateCart: ( ref ) => {
+		// 	itemsInCart = ref.itemsInCart;
+		// 	totalInCart = ref.totalInCart;
+		// 	ref.showCart();
+		// },
+		onToggleCart: ( isVisible ) => {
+			isCartVisible = isVisible;
+		}
+	};
 
-	let shop = new Shopify( credentials, shopifyUpdateCallback );
+	let shop = new Shopify( credentials, callbacks );
 
-	/*
-	* help required: how to make them reactive?
-	*/
 	let isCartVisible = shop.isCartVisible;
 	let itemsInCart = shop.itemsInCart;
 	let totalInCart = shop.totalInCart;
 
-	function showCart(){
+	function handleShowCart(){
 		shop.showCart();
-		isCartVisible = shop.isCartVisible;
 	}
-
-	function hideCart(){
+	function handleHideCart(){
 		shop.hideCart();
-		isCartVisible = shop.isCartVisible;
 	}
 
 </script>
@@ -41,8 +40,8 @@
 
 	<div class="cart">
 
-		<button on:click={showCart}>Show Cart</button>
-		<button on:click={hideCart}>Hide Cart</button>
+		<button on:click={handleShowCart}>Show Cart</button>
+		<button on:click={handleHideCart}>Hide Cart</button>
 
 		<span>{itemsInCart} items in Cart = {totalInCart}</span>
 
@@ -54,7 +53,7 @@
 
 	<Products {shop} />
 
-	<Cart {shop} {hideCart} {isCartVisible} />
+	<Cart {shop} {isCartVisible} />
 
 </main>
 

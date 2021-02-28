@@ -5,7 +5,6 @@
 
     export let shop;
     export let isCartVisible;
-    export let hideCart;
 
     let checkout = shop.checkout;
 
@@ -15,6 +14,10 @@
 
     $: empty = shop.isCartEmpty;
 
+    function handleHideCart(){
+		shop.hideCart();
+	}
+
 </script>
 
 {#if isCartVisible}
@@ -22,7 +25,7 @@
         <div class="cart">
 
             <div class="close">
-                <button on:click={hideCart}>×</button>
+                <button on:click={handleHideCart}>×</button>
             </div>
 
             <header>
