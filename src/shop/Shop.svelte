@@ -1,7 +1,7 @@
 <script>
 
 	import { onMount } from 'svelte';
-	import { Shopify } from './classes/shopify.js';
+	import { Shop } from './classes/shop.js';
 
 	import ShopInfo from './ShopInfo.svelte';
 	import Products from './Products.svelte';
@@ -21,11 +21,11 @@
 		}
 	};
 
-	let shop = new Shopify( credentials, callbacks );
+	let shop = new Shop( credentials, callbacks );
 	let checkout = shop.checkout;
-	let isCartVisible = shop.isCartVisible;
-	let itemsInCart = shop.itemsInCart;
-	let totalInCart = shop.totalInCart;
+	let isCartVisible = false;
+	let itemsInCart = 0;
+	let totalInCart = (0).toFixed(2);
 
 	function handleShowCart(){
 		shop.showCart();

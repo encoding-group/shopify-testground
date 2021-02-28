@@ -1,6 +1,6 @@
 import Client from 'shopify-buy';
 
-export class Shopify {
+export class Shop {
 
     constructor( credentials, callbacks ){
 
@@ -188,6 +188,10 @@ export class Shopify {
             console.error( error );
             return [];
         }
+    }
+
+    findVariantForOptions( product, selectedOptions ){
+        return this._client.product.helpers.variantForOptions(product, selectedOptions);
     }
 
 }
