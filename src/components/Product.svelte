@@ -48,6 +48,11 @@
     $: variant = selection.selectedVariant || product.variants[0];
     $: variantQuantity = selection.selectedVariantQuantity || 1;
 
+    function handleAddVariantToCart(){
+        shop.showCart();
+        shop.addVariantToCart(variant.id, variantQuantity);
+    }
+
 </script>
 
 <article>
@@ -101,7 +106,7 @@
 
             <QuantitySelector value={variantQuantity} on:change={handleQuantityChange} />
 
-            <button class="buy" on:click={() => shop.addVariantToCart(variant.id, variantQuantity)}>Add to Cart</button>
+            <button class="buy" on:click={handleAddVariantToCart} >Add to Cart</button>
 
         </div>
 

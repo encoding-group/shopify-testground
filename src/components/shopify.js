@@ -67,7 +67,6 @@ export class Shopify {
 
     async addVariantToCart( variantId, quantity ){
         console.log(`Shopify.addVariantToCart(${atob(variantId)},${quantity})`);
-		this.showCart();
 
 		const lineItemsToAdd = [{
             variantId,
@@ -76,11 +75,12 @@ export class Shopify {
 
         try {
             this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
-            // this._updateCallback(this);
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         } catch (error) {
             console.error( error );
             this._checkout = { lineItems: [] };
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         }
 	}
@@ -94,10 +94,12 @@ export class Shopify {
 
         try {
             this._checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         } catch (error) {
             console.error( error );
             this._checkout = { lineItems: [] };
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         }
 	}
@@ -106,10 +108,12 @@ export class Shopify {
         console.log(`Shopify.removeLineItemInCart(${atob(lineItemId)})`);
         try {
             this._checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         } catch (error) {
             console.error( error );
             this._checkout = { lineItems: [] };
+            this._callbacks.onUpdateCart(this);
             return this._checkout;
         }
 	}

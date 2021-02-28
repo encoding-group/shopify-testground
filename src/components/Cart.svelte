@@ -4,15 +4,8 @@
     import Debug from './Debug.svelte';
 
     export let shop;
+    export let checkout;
     export let isCartVisible;
-
-    let checkout = shop.checkout;
-
-    /*
-    * help required: cart must show and update according to the inner workings of the shop class
-    */
-
-    $: empty = shop.isCartEmpty;
 
     function handleHideCart(){
 		shop.hideCart();
@@ -32,7 +25,7 @@
                 <h2>Your cart</h2>
             </header>
 
-            {#if empty}
+            {#if checkout.lineItems.length < 1}
 
                 <p>Your cart is currently empty.</p>
 
@@ -53,7 +46,7 @@
                     </dl>
                     <dl class="taxes">
                         <dt>Taxes</dt>
-                        <dd>{shop.checkout.currencyCode} {checkout.totalTax}</dd>
+                        <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
                     </dl>
                     <dl class="subtotal">
                         <dt>Total</dt>

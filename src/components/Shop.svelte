@@ -11,18 +11,18 @@
 	export let credentials;
 
 	const callbacks = {
-		// onUpdateCart: ( ref ) => {
-		// 	itemsInCart = ref.itemsInCart;
-		// 	totalInCart = ref.totalInCart;
-		// 	ref.showCart();
-		// },
+		onUpdateCart: ( ref ) => {
+			itemsInCart = ref.itemsInCart;
+			totalInCart = ref.totalInCart;
+			checkout = shop.checkout;
+		},
 		onToggleCart: ( isVisible ) => {
 			isCartVisible = isVisible;
 		}
 	};
 
 	let shop = new Shopify( credentials, callbacks );
-
+	let checkout = shop.checkout;
 	let isCartVisible = shop.isCartVisible;
 	let itemsInCart = shop.itemsInCart;
 	let totalInCart = shop.totalInCart;
@@ -53,7 +53,7 @@
 
 	<Products {shop} />
 
-	<Cart {shop} {isCartVisible} />
+	<Cart {shop} {checkout} {isCartVisible} />
 
 </main>
 
