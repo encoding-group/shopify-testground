@@ -1,12 +1,12 @@
 <script>
 
 	import { onMount } from 'svelte';
-	import { Shopify } from './shopify.js';
+	import { Shopify } from './classes/shopify.js';
 
 	import ShopInfo from './ShopInfo.svelte';
 	import Products from './Products.svelte';
 	import Cart from './Cart.svelte';
-	import Debug from './Debug.svelte';
+	import Debug from './components/Debug.svelte';
 
 	export let credentials;
 

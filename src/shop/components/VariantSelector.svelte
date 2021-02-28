@@ -1,7 +1,5 @@
 <script>
 
-    import Product from './Product.svelte';
-
     export let option;
     export let handleOptionChange;
     export let key;

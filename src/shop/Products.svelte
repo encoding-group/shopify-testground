@@ -1,7 +1,7 @@
 <script>
 
     import Product from './Product.svelte';
-    import Debug from './Debug.svelte';
+    import Debug from './components/Debug.svelte';
     export let shop;
 
     let loadProducts = shop.fetchProducts();

@@ -1,10 +1,10 @@
 <script>
 
-    import VariantSelector from './VariantSelector.svelte';
-    import QuantitySelector from './QuantitySelector.svelte';
-    import Debug from './Debug.svelte';
+    import VariantSelector from './components/VariantSelector.svelte';
+    import QuantitySelector from './components/QuantitySelector.svelte';
+    import Debug from './components/Debug.svelte';
 
-    import { Product } from './product.js';
+    import { Product } from './classes/product.js';
 
     export let shop;
     export let item;

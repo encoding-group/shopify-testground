@@ -1,6 +1,6 @@
 <script>
 
-	import Debug from './Debug.svelte';
+	import Debug from './components/Debug.svelte';
 	export let shop;
 
 	let loadInfo = shop.fetchShopInfo();

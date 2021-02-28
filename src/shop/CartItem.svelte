@@ -1,7 +1,7 @@
 <script>
 
-    import QuantitySelector from './QuantitySelector.svelte';
-    import Debug from './Debug.svelte';
+    import QuantitySelector from './components/QuantitySelector.svelte';
+    import Debug from './components/Debug.svelte';
 
     export let item;
     export let shop;

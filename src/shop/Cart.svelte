@@ -1,7 +1,7 @@
 <script>
 
     import CartItem from './CartItem.svelte';
-    import Debug from './Debug.svelte';
+    import Debug from './components/Debug.svelte';
 
     export let shop;
     export let checkout;
