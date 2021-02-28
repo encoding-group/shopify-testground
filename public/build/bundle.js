@@ -1,5 +1,5 @@
 
-(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35730/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
+(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
 var app = (function () {
     'use strict';
 
@@ -9,9 +9,6 @@ var app = (function () {
         for (const k in src)
             tar[k] = src[k];
         return tar;
-    }
-    function is_promise(value) {
-        return value && typeof value === 'object' && typeof value.then === 'function';
     }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
@@ -110,8 +107,14 @@ var app = (function () {
         else if (node.getAttribute(attribute) !== value)
             node.setAttribute(attribute, value);
     }
+    function to_number(value) {
+        return value === '' ? null : +value;
+    }
     function children(element) {
         return Array.from(element.childNodes);
+    }
+    function set_input_value(input, value) {
+        input.value = value == null ? '' : value;
     }
     function custom_event(type, detail) {
         const e = document.createEvent('CustomEvent');
@@ -127,6 +130,23 @@ var app = (function () {
         if (!current_component)
             throw new Error('Function called outside component initialization');
         return current_component;
+    }
+    function onMount(fn) {
+        get_current_component().$$.on_mount.push(fn);
+    }
+    function createEventDispatcher() {
+        const component = get_current_component();
+        return (type, detail) => {
+            const callbacks = component.$$.callbacks[type];
+            if (callbacks) {
+                // TODO are there situations where events could be dispatched
+                // in a server (non-DOM) environment?
+                const event = custom_event(type, detail);
+                callbacks.slice().forEach(fn => {
+                    fn.call(component, event);
+                });
+            }
+        };
     }
 
     const dirty_components = [];
@@ -230,74 +250,11 @@ var app = (function () {
         }
     }
 
-    function handle_promise(promise, info) {
-        const token = info.token = {};
-        function update(type, index, key, value) {
-            if (info.token !== token)
-                return;
-            info.resolved = value;
-            let child_ctx = info.ctx;
-            if (key !== undefined) {
-                child_ctx = child_ctx.slice();
-                child_ctx[key] = value;
-            }
-            const block = type && (info.current = type)(child_ctx);
-            let needs_flush = false;
-            if (info.block) {
-                if (info.blocks) {
-                    info.blocks.forEach((block, i) => {
-                        if (i !== index && block) {
-                            group_outros();
-                            transition_out(block, 1, 1, () => {
-                                info.blocks[i] = null;
-                            });
-                            check_outros();
-                        }
-                    });
-                }
-                else {
-                    info.block.d(1);
-                }
-                block.c();
-                transition_in(block, 1);
-                block.m(info.mount(), info.anchor);
-                needs_flush = true;
-            }
-            info.block = block;
-            if (info.blocks)
-                info.blocks[index] = block;
-            if (needs_flush) {
-                flush();
-            }
-        }
-        if (is_promise(promise)) {
-            const current_component = get_current_component();
-            promise.then(value => {
-                set_current_component(current_component);
-                update(info.then, 1, info.value, value);
-                set_current_component(null);
-            }, error => {
-                set_current_component(current_component);
-                update(info.catch, 2, info.error, error);
-                set_current_component(null);
-                if (!info.hasCatch) {
-                    throw error;
-                }
-            });
-            // if we previously had a then/catch block, destroy it
-            if (info.current !== info.pending) {
-                update(info.pending, 0);
-                return true;
-            }
-        }
-        else {
-            if (info.current !== info.then) {
-                update(info.then, 1, info.value, promise);
-                return true;
-            }
-            info.resolved = promise;
-        }
-    }
+    const globals = (typeof window !== 'undefined'
+        ? window
+        : typeof globalThis !== 'undefined'
+            ? globalThis
+            : global);
     function create_component(block) {
         block && block.c();
     }
@@ -457,6 +414,10 @@ var app = (function () {
             dispatch_dev('SvelteDOMRemoveAttribute', { node, attribute });
         else
             dispatch_dev('SvelteDOMSetAttribute', { node, attribute, value });
+    }
+    function prop_dev(node, property, value) {
+        node[property] = value;
+        dispatch_dev('SvelteDOMSetProperty', { node, property, value });
     }
     function set_data_dev(text, data) {
         data = '' + data;
@@ -10327,14 +10288,493 @@ var app = (function () {
 
     var shopifyBuy = Client;
 
-    const client = shopifyBuy.buildClient({
+    const sample = {
         storefrontAccessToken: 'dd4d4dc146542ba7763305d71d1b3d38',
         domain: 'graphql.myshopify.com'
-    });
+    };
+
+    const client = shopifyBuy.buildClient( sample );
+
+    /* src/components/VariantSelector.svelte generated by Svelte v3.31.0 */
+    const file = "src/components/VariantSelector.svelte";
+
+    function get_each_context(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[3] = list[i];
+    	return child_ctx;
+    }
+
+    // (13:4) {#each option.values as value}
+    function create_each_block(ctx) {
+    	let option_1;
+    	let t_value = /*value*/ ctx[3] + "";
+    	let t;
+    	let option_1_value_value;
+    	let option_1_key_value;
+
+    	const block = {
+    		c: function create() {
+    			option_1 = element("option");
+    			t = text(t_value);
+    			option_1.__value = option_1_value_value = /*value*/ ctx[3];
+    			option_1.value = option_1.__value;
+    			attr_dev(option_1, "key", option_1_key_value = `${/*option*/ ctx[0].name}-${/*value*/ ctx[3]}`);
+    			add_location(option_1, file, 13, 8, 267);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, option_1, anchor);
+    			append_dev(option_1, t);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*option*/ 1 && t_value !== (t_value = /*value*/ ctx[3] + "")) set_data_dev(t, t_value);
+
+    			if (dirty & /*option*/ 1 && option_1_value_value !== (option_1_value_value = /*value*/ ctx[3])) {
+    				prop_dev(option_1, "__value", option_1_value_value);
+    				option_1.value = option_1.__value;
+    			}
+
+    			if (dirty & /*option*/ 1 && option_1_key_value !== (option_1_key_value = `${/*option*/ ctx[0].name}-${/*value*/ ctx[3]}`)) {
+    				attr_dev(option_1, "key", option_1_key_value);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(option_1);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block.name,
+    		type: "each",
+    		source: "(13:4) {#each option.values as value}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment(ctx) {
+    	let select;
+    	let select_name_value;
+    	let select_key_value;
+    	let mounted;
+    	let dispose;
+    	let each_value = /*option*/ ctx[0].values;
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    	}
+
+    	const block = {
+    		c: function create() {
+    			select = element("select");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			attr_dev(select, "name", select_name_value = /*option*/ ctx[0].name);
+    			attr_dev(select, "key", select_key_value = /*option*/ ctx[0].name);
+    			add_location(select, file, 10, 0, 145);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, select, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(select, null);
+    			}
+
+    			if (!mounted) {
+    				dispose = listen_dev(
+    					select,
+    					"change",
+    					function () {
+    						if (is_function(/*handleOptionChange*/ ctx[1])) /*handleOptionChange*/ ctx[1].apply(this, arguments);
+    					},
+    					false,
+    					false,
+    					false
+    				);
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(new_ctx, [dirty]) {
+    			ctx = new_ctx;
+
+    			if (dirty & /*option*/ 1) {
+    				each_value = /*option*/ ctx[0].values;
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(select, null);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value.length;
+    			}
+
+    			if (dirty & /*option*/ 1 && select_name_value !== (select_name_value = /*option*/ ctx[0].name)) {
+    				attr_dev(select, "name", select_name_value);
+    			}
+
+    			if (dirty & /*option*/ 1 && select_key_value !== (select_key_value = /*option*/ ctx[0].name)) {
+    				attr_dev(select, "key", select_key_value);
+    			}
+    		},
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(select);
+    			destroy_each(each_blocks, detaching);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("VariantSelector", slots, []);
+    	let { option } = $$props;
+    	let { handleOptionChange } = $$props;
+    	let { key } = $$props;
+    	const writable_props = ["option", "handleOptionChange", "key"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<VariantSelector> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ("option" in $$props) $$invalidate(0, option = $$props.option);
+    		if ("handleOptionChange" in $$props) $$invalidate(1, handleOptionChange = $$props.handleOptionChange);
+    		if ("key" in $$props) $$invalidate(2, key = $$props.key);
+    	};
+
+    	$$self.$capture_state = () => ({ Product: Product$1, option, handleOptionChange, key });
+
+    	$$self.$inject_state = $$props => {
+    		if ("option" in $$props) $$invalidate(0, option = $$props.option);
+    		if ("handleOptionChange" in $$props) $$invalidate(1, handleOptionChange = $$props.handleOptionChange);
+    		if ("key" in $$props) $$invalidate(2, key = $$props.key);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [option, handleOptionChange, key];
+    }
+
+    class VariantSelector extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance, create_fragment, safe_not_equal, { option: 0, handleOptionChange: 1, key: 2 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "VariantSelector",
+    			options,
+    			id: create_fragment.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*option*/ ctx[0] === undefined && !("option" in props)) {
+    			console.warn("<VariantSelector> was created without expected prop 'option'");
+    		}
+
+    		if (/*handleOptionChange*/ ctx[1] === undefined && !("handleOptionChange" in props)) {
+    			console.warn("<VariantSelector> was created without expected prop 'handleOptionChange'");
+    		}
+
+    		if (/*key*/ ctx[2] === undefined && !("key" in props)) {
+    			console.warn("<VariantSelector> was created without expected prop 'key'");
+    		}
+    	}
+
+    	get option() {
+    		throw new Error("<VariantSelector>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set option(value) {
+    		throw new Error("<VariantSelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get handleOptionChange() {
+    		throw new Error("<VariantSelector>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set handleOptionChange(value) {
+    		throw new Error("<VariantSelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get key() {
+    		throw new Error("<VariantSelector>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set key(value) {
+    		throw new Error("<VariantSelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/components/QuantitySelector.svelte generated by Svelte v3.31.0 */
+    const file$1 = "src/components/QuantitySelector.svelte";
+
+    // (27:13) Quantity
+    function fallback_block(ctx) {
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			t = text("Quantity");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, t, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(t);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: fallback_block.name,
+    		type: "fallback",
+    		source: "(27:13) Quantity",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
+    	let label;
+    	let p;
+    	let t0;
+    	let button0;
+    	let t2;
+    	let input;
+    	let t3;
+    	let button1;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	const default_slot_template = /*#slots*/ ctx[5].default;
+    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[4], null);
+    	const default_slot_or_fallback = default_slot || fallback_block(ctx);
+
+    	const block = {
+    		c: function create() {
+    			label = element("label");
+    			p = element("p");
+    			if (default_slot_or_fallback) default_slot_or_fallback.c();
+    			t0 = space();
+    			button0 = element("button");
+    			button0.textContent = "-";
+    			t2 = space();
+    			input = element("input");
+    			t3 = space();
+    			button1 = element("button");
+    			button1.textContent = "+";
+    			attr_dev(p, "class", "svelte-flhrid");
+    			add_location(p, file$1, 26, 4, 489);
+    			attr_dev(button0, "title", "Buy less");
+    			attr_dev(button0, "class", "svelte-flhrid");
+    			add_location(button0, file$1, 27, 4, 522);
+    			attr_dev(input, "min", "1");
+    			attr_dev(input, "type", "number");
+    			attr_dev(input, "class", "svelte-flhrid");
+    			add_location(input, file$1, 28, 4, 583);
+    			attr_dev(button1, "title", "Buy more");
+    			attr_dev(button1, "class", "svelte-flhrid");
+    			add_location(button1, file$1, 29, 4, 655);
+    			attr_dev(label, "class", "svelte-flhrid");
+    			add_location(label, file$1, 25, 0, 477);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, label, anchor);
+    			append_dev(label, p);
+
+    			if (default_slot_or_fallback) {
+    				default_slot_or_fallback.m(p, null);
+    			}
+
+    			append_dev(label, t0);
+    			append_dev(label, button0);
+    			append_dev(label, t2);
+    			append_dev(label, input);
+    			set_input_value(input, /*value*/ ctx[0]);
+    			append_dev(label, t3);
+    			append_dev(label, button1);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(button0, "click", /*decrement*/ ctx[1], false, false, false),
+    					listen_dev(input, "input", /*input_input_handler*/ ctx[6]),
+    					listen_dev(input, "change", /*handleChange*/ ctx[3], false, false, false),
+    					listen_dev(button1, "click", /*increment*/ ctx[2], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (default_slot) {
+    				if (default_slot.p && dirty & /*$$scope*/ 16) {
+    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[4], dirty, null, null);
+    				}
+    			}
+
+    			if (dirty & /*value*/ 1 && to_number(input.value) !== /*value*/ ctx[0]) {
+    				set_input_value(input, /*value*/ ctx[0]);
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(default_slot_or_fallback, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(default_slot_or_fallback, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(label);
+    			if (default_slot_or_fallback) default_slot_or_fallback.d(detaching);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$1.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$1($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("QuantitySelector", slots, ['default']);
+    	const dispatcher = createEventDispatcher();
+    	let { value = 1 } = $$props;
+
+    	function decrement() {
+    		if (value > 1) {
+    			$$invalidate(0, value--, value);
+    			dispatcher("change", value);
+    		} else {
+    			$$invalidate(0, value = 1);
+    		}
+    	}
+
+    	function increment() {
+    		$$invalidate(0, value++, value);
+    		dispatcher("change", value);
+    	}
+
+    	function handleChange() {
+    		dispatcher("change", value);
+    	}
+
+    	const writable_props = ["value"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<QuantitySelector> was created with unknown prop '${key}'`);
+    	});
+
+    	function input_input_handler() {
+    		value = to_number(this.value);
+    		$$invalidate(0, value);
+    	}
+
+    	$$self.$$set = $$props => {
+    		if ("value" in $$props) $$invalidate(0, value = $$props.value);
+    		if ("$$scope" in $$props) $$invalidate(4, $$scope = $$props.$$scope);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		createEventDispatcher,
+    		dispatcher,
+    		value,
+    		decrement,
+    		increment,
+    		handleChange
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("value" in $$props) $$invalidate(0, value = $$props.value);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [value, decrement, increment, handleChange, $$scope, slots, input_input_handler];
+    }
+
+    class QuantitySelector extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { value: 0 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "QuantitySelector",
+    			options,
+    			id: create_fragment$1.name
+    		});
+    	}
+
+    	get value() {
+    		throw new Error("<QuantitySelector>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set value(value) {
+    		throw new Error("<QuantitySelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
 
     /* src/components/Debug.svelte generated by Svelte v3.31.0 */
 
-    const file = "src/components/Debug.svelte";
+    const file$2 = "src/components/Debug.svelte";
 
     // (17:4) {#if show}
     function create_if_block(ctx) {
@@ -10346,8 +10786,8 @@ var app = (function () {
     		c: function create() {
     			pre = element("pre");
     			t = text(t_value);
-    			attr_dev(pre, "class", "svelte-d7kj19");
-    			add_location(pre, file, 17, 8, 236);
+    			attr_dev(pre, "class", "svelte-1l6o223");
+    			add_location(pre, file$2, 17, 8, 244);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, pre, anchor);
@@ -10372,15 +10812,15 @@ var app = (function () {
     	return block;
     }
 
-    function create_fragment(ctx) {
+    function create_fragment$2(ctx) {
     	let section;
     	let header;
     	let h3;
+    	let code;
     	let t0;
     	let t1;
-    	let t2;
     	let button;
-    	let t4;
+    	let t3;
     	let current;
     	let mounted;
     	let dispose;
@@ -10393,20 +10833,22 @@ var app = (function () {
     			section = element("section");
     			header = element("header");
     			h3 = element("h3");
-    			t0 = text("Show ");
+    			code = element("code");
     			if (default_slot) default_slot.c();
-    			t1 = text(" Dataset");
-    			t2 = space();
+    			t0 = text(" Dataset");
+    			t1 = space();
     			button = element("button");
     			button.textContent = "Toggle";
-    			t4 = space();
+    			t3 = space();
     			if (if_block) if_block.c();
-    			add_location(h3, file, 11, 8, 105);
-    			add_location(button, file, 12, 8, 144);
-    			attr_dev(header, "class", "svelte-d7kj19");
-    			add_location(header, file, 9, 4, 87);
-    			attr_dev(section, "class", "svelte-d7kj19");
-    			add_location(section, file, 7, 0, 72);
+    			attr_dev(code, "class", "svelte-1l6o223");
+    			add_location(code, file$2, 11, 12, 109);
+    			add_location(h3, file$2, 11, 8, 105);
+    			add_location(button, file$2, 12, 8, 152);
+    			attr_dev(header, "class", "svelte-1l6o223");
+    			add_location(header, file$2, 9, 4, 87);
+    			attr_dev(section, "class", "svelte-1l6o223");
+    			add_location(section, file$2, 7, 0, 72);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10415,16 +10857,16 @@ var app = (function () {
     			insert_dev(target, section, anchor);
     			append_dev(section, header);
     			append_dev(header, h3);
-    			append_dev(h3, t0);
+    			append_dev(h3, code);
 
     			if (default_slot) {
-    				default_slot.m(h3, null);
+    				default_slot.m(code, null);
     			}
 
-    			append_dev(h3, t1);
-    			append_dev(header, t2);
+    			append_dev(h3, t0);
+    			append_dev(header, t1);
     			append_dev(header, button);
-    			append_dev(section, t4);
+    			append_dev(section, t3);
     			if (if_block) if_block.m(section, null);
     			current = true;
 
@@ -10473,7 +10915,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment.name,
+    		id: create_fragment$2.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10482,7 +10924,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance($$self, $$props, $$invalidate) {
+    function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Debug", slots, ['default']);
     	let { data } = $$props;
@@ -10518,13 +10960,13 @@ var app = (function () {
     class Debug extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { data: 1, show: 0 });
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { data: 1, show: 0 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Debug",
     			options,
-    			id: create_fragment.name
+    			id: create_fragment$2.name
     		});
 
     		const { ctx } = this.$$;
@@ -10553,9 +10995,289 @@ var app = (function () {
     }
 
     /* src/components/Product.svelte generated by Svelte v3.31.0 */
-    const file$1 = "src/components/Product.svelte";
+    const file$3 = "src/components/Product.svelte";
 
-    // (46:4) <Debug data={product}>
+    function get_each_context$1(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[12] = list[i];
+    	return child_ctx;
+    }
+
+    function get_each_context_1(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[15] = list[i];
+    	return child_ctx;
+    }
+
+    // (52:4) {#if product.images.length}
+    function create_if_block_1(ctx) {
+    	let div;
+    	let each_value_1 = /*product*/ ctx[0].images;
+    	validate_each_argument(each_value_1);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value_1.length; i += 1) {
+    		each_blocks[i] = create_each_block_1(get_each_context_1(ctx, each_value_1, i));
+    	}
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			attr_dev(div, "class", "gallery svelte-lshilk");
+    			add_location(div, file$3, 52, 8, 1542);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(div, null);
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*product*/ 1) {
+    				each_value_1 = /*product*/ ctx[0].images;
+    				validate_each_argument(each_value_1);
+    				let i;
+
+    				for (i = 0; i < each_value_1.length; i += 1) {
+    					const child_ctx = get_each_context_1(ctx, each_value_1, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block_1(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(div, null);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value_1.length;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			destroy_each(each_blocks, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1.name,
+    		type: "if",
+    		source: "(52:4) {#if product.images.length}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (54:12) {#each product.images as image}
+    function create_each_block_1(ctx) {
+    	let figure;
+    	let img;
+    	let img_src_value;
+    	let img_alt_value;
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			figure = element("figure");
+    			img = element("img");
+    			t = space();
+    			if (img.src !== (img_src_value = /*image*/ ctx[15].src)) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "alt", img_alt_value = `${/*product*/ ctx[0].title} product shot`);
+    			add_location(img, file$3, 55, 20, 1653);
+    			add_location(figure, file$3, 54, 16, 1624);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, figure, anchor);
+    			append_dev(figure, img);
+    			append_dev(figure, t);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*product*/ 1 && img.src !== (img_src_value = /*image*/ ctx[15].src)) {
+    				attr_dev(img, "src", img_src_value);
+    			}
+
+    			if (dirty & /*product*/ 1 && img_alt_value !== (img_alt_value = `${/*product*/ ctx[0].title} product shot`)) {
+    				attr_dev(img, "alt", img_alt_value);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(figure);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block_1.name,
+    		type: "each",
+    		source: "(54:12) {#each product.images as image}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (89:12) {#if product.options.length > 1}
+    function create_if_block$1(ctx) {
+    	let each_1_anchor;
+    	let current;
+    	let each_value = /*product*/ ctx[0].options;
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
+    	}
+
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
+
+    	const block = {
+    		c: function create() {
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			each_1_anchor = empty();
+    		},
+    		m: function mount(target, anchor) {
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(target, anchor);
+    			}
+
+    			insert_dev(target, each_1_anchor, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*handleOptionChange, product*/ 17) {
+    				each_value = /*product*/ ctx[0].options;
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context$1(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    						transition_in(each_blocks[i], 1);
+    					} else {
+    						each_blocks[i] = create_each_block$1(child_ctx);
+    						each_blocks[i].c();
+    						transition_in(each_blocks[i], 1);
+    						each_blocks[i].m(each_1_anchor.parentNode, each_1_anchor);
+    					}
+    				}
+
+    				group_outros();
+
+    				for (i = each_value.length; i < each_blocks.length; i += 1) {
+    					out(i);
+    				}
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+
+    			for (let i = 0; i < each_value.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			each_blocks = each_blocks.filter(Boolean);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(each_1_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$1.name,
+    		type: "if",
+    		source: "(89:12) {#if product.options.length > 1}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (90:16) {#each product.options as option}
+    function create_each_block$1(ctx) {
+    	let variantselector;
+    	let current;
+
+    	variantselector = new VariantSelector({
+    			props: {
+    				handleOptionChange: /*handleOptionChange*/ ctx[4],
+    				option: /*option*/ ctx[12],
+    				key: /*option*/ ctx[12].id.toString()
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(variantselector.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(variantselector, target, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			const variantselector_changes = {};
+    			if (dirty & /*product*/ 1) variantselector_changes.option = /*option*/ ctx[12];
+    			if (dirty & /*product*/ 1) variantselector_changes.key = /*option*/ ctx[12].id.toString();
+    			variantselector.$set(variantselector_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(variantselector.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(variantselector.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(variantselector, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block$1.name,
+    		type: "each",
+    		source: "(90:16) {#each product.options as option}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (108:8) <Debug data={product}>
     function create_default_slot(ctx) {
     	let t;
 
@@ -10575,43 +11297,69 @@ var app = (function () {
     		block,
     		id: create_default_slot.name,
     		type: "slot",
-    		source: "(46:4) <Debug data={product}>",
+    		source: "(108:8) <Debug data={product}>",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$1(ctx) {
+    function create_fragment$3(ctx) {
     	let article;
-    	let div;
-    	let h1;
-    	let t0_value = /*product*/ ctx[0].title + "";
     	let t0;
+    	let div1;
+    	let h1;
+    	let t1_value = /*product*/ ctx[0].title + "";
     	let t1;
+    	let t2;
     	let dl;
     	let dt0;
     	let dd0;
-    	let t3_value = /*product*/ ctx[0].productType + "";
-    	let t3;
+    	let t4_value = /*product*/ ctx[0].productType + "";
+    	let t4;
     	let dt1;
     	let dd1;
-    	let t5_value = /*product*/ ctx[0].vendor + "";
-    	let t5;
+    	let t6_value = /*product*/ ctx[0].vendor + "";
+    	let t6;
     	let dt2;
     	let dd2;
     	let raw_value = /*product*/ ctx[0].description + "";
     	let dt3;
     	let dd3;
-    	let t8_value = /*product*/ ctx[0].handle + "";
-    	let t8;
+    	let t9_value = /*product*/ ctx[0].handle + "";
+    	let t9;
     	let dt4;
     	let dd4;
-    	let t10_value = /*product*/ ctx[0].id + "";
-    	let t10;
+    	let t11_value = atob(/*product*/ ctx[0].id) + "";
     	let t11;
+    	let t12;
+    	let div0;
+    	let span;
+    	let t13_value = /*variant*/ ctx[2].priceV2.currencyCode + "";
+    	let t13;
+    	let t14;
+    	let t15_value = /*variant*/ ctx[2].price + "";
+    	let t15;
+    	let t16;
+    	let t17;
+    	let quantityselector;
+    	let t18;
+    	let button;
+    	let t20;
+    	let div2;
     	let debug_1;
     	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block0 = /*product*/ ctx[0].images.length && create_if_block_1(ctx);
+    	let if_block1 = /*product*/ ctx[0].options.length > 1 && create_if_block$1(ctx);
+
+    	quantityselector = new QuantitySelector({
+    			props: { value: /*variantQuantity*/ ctx[3] },
+    			$$inline: true
+    		});
+
+    	quantityselector.$on("change", /*handleQuantityChange*/ ctx[5]);
 
     	debug_1 = new Debug({
     			props: {
@@ -10625,100 +11373,181 @@ var app = (function () {
     	const block = {
     		c: function create() {
     			article = element("article");
-    			div = element("div");
+    			if (if_block0) if_block0.c();
+    			t0 = space();
+    			div1 = element("div");
     			h1 = element("h1");
-    			t0 = text(t0_value);
-    			t1 = space();
+    			t1 = text(t1_value);
+    			t2 = space();
     			dl = element("dl");
     			dt0 = element("dt");
     			dt0.textContent = "Type";
     			dd0 = element("dd");
-    			t3 = text(t3_value);
+    			t4 = text(t4_value);
     			dt1 = element("dt");
     			dt1.textContent = "Vendor";
     			dd1 = element("dd");
-    			t5 = text(t5_value);
+    			t6 = text(t6_value);
     			dt2 = element("dt");
     			dt2.textContent = "Description";
     			dd2 = element("dd");
     			dt3 = element("dt");
     			dt3.textContent = "Handle";
     			dd3 = element("dd");
-    			t8 = text(t8_value);
+    			t9 = text(t9_value);
     			dt4 = element("dt");
     			dt4.textContent = "ID";
     			dd4 = element("dd");
-    			t10 = text(t10_value);
-    			t11 = space();
+    			t11 = text(t11_value);
+    			t12 = space();
+    			div0 = element("div");
+    			span = element("span");
+    			t13 = text(t13_value);
+    			t14 = space();
+    			t15 = text(t15_value);
+    			t16 = space();
+    			if (if_block1) if_block1.c();
+    			t17 = space();
+    			create_component(quantityselector.$$.fragment);
+    			t18 = space();
+    			button = element("button");
+    			button.textContent = "Add to Cart";
+    			t20 = space();
+    			div2 = element("div");
     			create_component(debug_1.$$.fragment);
-    			attr_dev(h1, "class", "svelte-19unddo");
-    			add_location(h1, file$1, 12, 8, 137);
-    			attr_dev(dt0, "class", "svelte-19unddo");
-    			add_location(dt0, file$1, 15, 12, 188);
-    			attr_dev(dd0, "class", "svelte-19unddo");
-    			add_location(dd0, file$1, 16, 12, 214);
-    			attr_dev(dt1, "class", "svelte-19unddo");
-    			add_location(dt1, file$1, 17, 12, 257);
-    			attr_dev(dd1, "class", "svelte-19unddo");
-    			add_location(dd1, file$1, 18, 12, 285);
-    			attr_dev(dt2, "class", "svelte-19unddo");
-    			add_location(dt2, file$1, 19, 12, 323);
-    			attr_dev(dd2, "class", "svelte-19unddo");
-    			add_location(dd2, file$1, 20, 12, 356);
-    			attr_dev(dt3, "class", "svelte-19unddo");
-    			add_location(dt3, file$1, 21, 12, 405);
-    			attr_dev(dd3, "class", "svelte-19unddo");
-    			add_location(dd3, file$1, 22, 12, 433);
-    			attr_dev(dt4, "class", "svelte-19unddo");
-    			add_location(dt4, file$1, 23, 12, 471);
-    			attr_dev(dd4, "class", "svelte-19unddo");
-    			add_location(dd4, file$1, 24, 12, 495);
-    			attr_dev(dl, "class", "svelte-19unddo");
-    			add_location(dl, file$1, 14, 8, 171);
-    			attr_dev(div, "classname", "Product");
-    			add_location(div, file$1, 10, 4, 102);
-    			attr_dev(article, "class", "svelte-19unddo");
-    			add_location(article, file$1, 8, 0, 87);
+    			attr_dev(h1, "class", "svelte-lshilk");
+    			add_location(h1, file$3, 63, 8, 1821);
+    			add_location(dt0, file$3, 67, 12, 1873);
+    			attr_dev(dd0, "class", "svelte-lshilk");
+    			add_location(dd0, file$3, 68, 12, 1899);
+    			add_location(dt1, file$3, 70, 12, 1943);
+    			attr_dev(dd1, "class", "svelte-lshilk");
+    			add_location(dd1, file$3, 71, 12, 1971);
+    			add_location(dt2, file$3, 73, 12, 2010);
+    			attr_dev(dd2, "class", "svelte-lshilk");
+    			add_location(dd2, file$3, 74, 12, 2043);
+    			add_location(dt3, file$3, 76, 12, 2093);
+    			attr_dev(dd3, "class", "svelte-lshilk");
+    			add_location(dd3, file$3, 77, 12, 2121);
+    			add_location(dt4, file$3, 79, 12, 2160);
+    			attr_dev(dd4, "class", "svelte-lshilk");
+    			add_location(dd4, file$3, 80, 12, 2184);
+    			attr_dev(dl, "class", "svelte-lshilk");
+    			add_location(dl, file$3, 65, 8, 1855);
+    			attr_dev(span, "class", "price");
+    			add_location(span, file$3, 86, 12, 2267);
+    			attr_dev(button, "class", "buy svelte-lshilk");
+    			add_location(button, file$3, 100, 12, 2772);
+    			attr_dev(div0, "class", "buy svelte-lshilk");
+    			add_location(div0, file$3, 84, 8, 2236);
+    			attr_dev(div1, "class", "details svelte-lshilk");
+    			add_location(div1, file$3, 61, 4, 1790);
+    			attr_dev(div2, "class", "full svelte-lshilk");
+    			add_location(div2, file$3, 106, 4, 2909);
+    			attr_dev(article, "class", "svelte-lshilk");
+    			add_location(article, file$3, 49, 0, 1491);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, article, anchor);
-    			append_dev(article, div);
-    			append_dev(div, h1);
-    			append_dev(h1, t0);
-    			append_dev(div, t1);
-    			append_dev(div, dl);
+    			if (if_block0) if_block0.m(article, null);
+    			append_dev(article, t0);
+    			append_dev(article, div1);
+    			append_dev(div1, h1);
+    			append_dev(h1, t1);
+    			append_dev(div1, t2);
+    			append_dev(div1, dl);
     			append_dev(dl, dt0);
     			append_dev(dl, dd0);
-    			append_dev(dd0, t3);
+    			append_dev(dd0, t4);
     			append_dev(dl, dt1);
     			append_dev(dl, dd1);
-    			append_dev(dd1, t5);
+    			append_dev(dd1, t6);
     			append_dev(dl, dt2);
     			append_dev(dl, dd2);
     			dd2.innerHTML = raw_value;
     			append_dev(dl, dt3);
     			append_dev(dl, dd3);
-    			append_dev(dd3, t8);
+    			append_dev(dd3, t9);
     			append_dev(dl, dt4);
     			append_dev(dl, dd4);
-    			append_dev(dd4, t10);
-    			append_dev(article, t11);
-    			mount_component(debug_1, article, null);
+    			append_dev(dd4, t11);
+    			append_dev(div1, t12);
+    			append_dev(div1, div0);
+    			append_dev(div0, span);
+    			append_dev(span, t13);
+    			append_dev(span, t14);
+    			append_dev(span, t15);
+    			append_dev(div0, t16);
+    			if (if_block1) if_block1.m(div0, null);
+    			append_dev(div0, t17);
+    			mount_component(quantityselector, div0, null);
+    			append_dev(div0, t18);
+    			append_dev(div0, button);
+    			append_dev(article, t20);
+    			append_dev(article, div2);
+    			mount_component(debug_1, div2, null);
     			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*click_handler*/ ctx[9], false, false, false);
+    				mounted = true;
+    			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if ((!current || dirty & /*product*/ 1) && t0_value !== (t0_value = /*product*/ ctx[0].title + "")) set_data_dev(t0, t0_value);
-    			if ((!current || dirty & /*product*/ 1) && t3_value !== (t3_value = /*product*/ ctx[0].productType + "")) set_data_dev(t3, t3_value);
-    			if ((!current || dirty & /*product*/ 1) && t5_value !== (t5_value = /*product*/ ctx[0].vendor + "")) set_data_dev(t5, t5_value);
-    			if ((!current || dirty & /*product*/ 1) && raw_value !== (raw_value = /*product*/ ctx[0].description + "")) dd2.innerHTML = raw_value;			if ((!current || dirty & /*product*/ 1) && t8_value !== (t8_value = /*product*/ ctx[0].handle + "")) set_data_dev(t8, t8_value);
-    			if ((!current || dirty & /*product*/ 1) && t10_value !== (t10_value = /*product*/ ctx[0].id + "")) set_data_dev(t10, t10_value);
+    			if (/*product*/ ctx[0].images.length) {
+    				if (if_block0) {
+    					if_block0.p(ctx, dirty);
+    				} else {
+    					if_block0 = create_if_block_1(ctx);
+    					if_block0.c();
+    					if_block0.m(article, t0);
+    				}
+    			} else if (if_block0) {
+    				if_block0.d(1);
+    				if_block0 = null;
+    			}
+
+    			if ((!current || dirty & /*product*/ 1) && t1_value !== (t1_value = /*product*/ ctx[0].title + "")) set_data_dev(t1, t1_value);
+    			if ((!current || dirty & /*product*/ 1) && t4_value !== (t4_value = /*product*/ ctx[0].productType + "")) set_data_dev(t4, t4_value);
+    			if ((!current || dirty & /*product*/ 1) && t6_value !== (t6_value = /*product*/ ctx[0].vendor + "")) set_data_dev(t6, t6_value);
+    			if ((!current || dirty & /*product*/ 1) && raw_value !== (raw_value = /*product*/ ctx[0].description + "")) dd2.innerHTML = raw_value;			if ((!current || dirty & /*product*/ 1) && t9_value !== (t9_value = /*product*/ ctx[0].handle + "")) set_data_dev(t9, t9_value);
+    			if ((!current || dirty & /*product*/ 1) && t11_value !== (t11_value = atob(/*product*/ ctx[0].id) + "")) set_data_dev(t11, t11_value);
+    			if ((!current || dirty & /*variant*/ 4) && t13_value !== (t13_value = /*variant*/ ctx[2].priceV2.currencyCode + "")) set_data_dev(t13, t13_value);
+    			if ((!current || dirty & /*variant*/ 4) && t15_value !== (t15_value = /*variant*/ ctx[2].price + "")) set_data_dev(t15, t15_value);
+
+    			if (/*product*/ ctx[0].options.length > 1) {
+    				if (if_block1) {
+    					if_block1.p(ctx, dirty);
+
+    					if (dirty & /*product*/ 1) {
+    						transition_in(if_block1, 1);
+    					}
+    				} else {
+    					if_block1 = create_if_block$1(ctx);
+    					if_block1.c();
+    					transition_in(if_block1, 1);
+    					if_block1.m(div0, t17);
+    				}
+    			} else if (if_block1) {
+    				group_outros();
+
+    				transition_out(if_block1, 1, 1, () => {
+    					if_block1 = null;
+    				});
+
+    				check_outros();
+    			}
+
+    			const quantityselector_changes = {};
+    			if (dirty & /*variantQuantity*/ 8) quantityselector_changes.value = /*variantQuantity*/ ctx[3];
+    			quantityselector.$set(quantityselector_changes);
     			const debug_1_changes = {};
     			if (dirty & /*product*/ 1) debug_1_changes.data = /*product*/ ctx[0];
 
-    			if (dirty & /*$$scope*/ 2) {
+    			if (dirty & /*$$scope*/ 262144) {
     				debug_1_changes.$$scope = { dirty, ctx };
     			}
 
@@ -10726,22 +11555,31 @@ var app = (function () {
     		},
     		i: function intro(local) {
     			if (current) return;
+    			transition_in(if_block1);
+    			transition_in(quantityselector.$$.fragment, local);
     			transition_in(debug_1.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
+    			transition_out(if_block1);
+    			transition_out(quantityselector.$$.fragment, local);
     			transition_out(debug_1.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(article);
+    			if (if_block0) if_block0.d();
+    			if (if_block1) if_block1.d();
+    			destroy_component(quantityselector);
     			destroy_component(debug_1);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$1.name,
+    		id: create_fragment$3.name,
     		type: "component",
     		source: "",
     		ctx
@@ -10750,43 +11588,141 @@ var app = (function () {
     	return block;
     }
 
-    function instance$1($$self, $$props, $$invalidate) {
+    function findImage(images, variantId) {
+    	const primary = images[0];
+
+    	const image = images.filter(image => {
+    		return image.variant_ids.includes(variantId);
+    	})[0];
+
+    	return (image || primary).src;
+    }
+
+    function instance$3($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Product", slots, []);
     	let { product } = $$props;
-    	const writable_props = ["product"];
+    	let { client } = $$props;
+    	let { addVariantToCart } = $$props;
+    	let { key } = $$props;
+    	let defaultOptionValues = {};
+
+    	product.options.forEach(selector => {
+    		defaultOptionValues[selector.name] = selector.values[0].value;
+    	});
+
+    	let selection = { selectedOptions: defaultOptionValues };
+
+    	function handleOptionChange(event) {
+    		const target = event.target;
+    		let selectedOptions = selection.selectedOptions;
+    		selectedOptions[target.name] = target.value;
+    		const selectedVariant = client.product.helpers.variantForOptions(product, selectedOptions);
+    		$$invalidate(8, selection.selectedVariant = selectedVariant, selection);
+    		$$invalidate(8, selection.selectedVariantImage = selectedVariant.attrs.image, selection);
+    	}
+
+    	function handleQuantityChange(event) {
+    		$$invalidate(8, selection.selectedVariantQuantity = event.detail, selection);
+    	}
+
+    	const writable_props = ["product", "client", "addVariantToCart", "key"];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Product> was created with unknown prop '${key}'`);
     	});
 
+    	const click_handler = () => addVariantToCart(variant.id, variantQuantity);
+
     	$$self.$$set = $$props => {
     		if ("product" in $$props) $$invalidate(0, product = $$props.product);
+    		if ("client" in $$props) $$invalidate(6, client = $$props.client);
+    		if ("addVariantToCart" in $$props) $$invalidate(1, addVariantToCart = $$props.addVariantToCart);
+    		if ("key" in $$props) $$invalidate(7, key = $$props.key);
     	};
 
-    	$$self.$capture_state = () => ({ Debug, product });
+    	$$self.$capture_state = () => ({
+    		VariantSelector,
+    		QuantitySelector,
+    		Debug,
+    		product,
+    		client,
+    		addVariantToCart,
+    		key,
+    		defaultOptionValues,
+    		selection,
+    		findImage,
+    		handleOptionChange,
+    		handleQuantityChange,
+    		variantImage,
+    		variant,
+    		variantQuantity
+    	});
 
     	$$self.$inject_state = $$props => {
     		if ("product" in $$props) $$invalidate(0, product = $$props.product);
+    		if ("client" in $$props) $$invalidate(6, client = $$props.client);
+    		if ("addVariantToCart" in $$props) $$invalidate(1, addVariantToCart = $$props.addVariantToCart);
+    		if ("key" in $$props) $$invalidate(7, key = $$props.key);
+    		if ("defaultOptionValues" in $$props) defaultOptionValues = $$props.defaultOptionValues;
+    		if ("selection" in $$props) $$invalidate(8, selection = $$props.selection);
+    		if ("variantImage" in $$props) variantImage = $$props.variantImage;
+    		if ("variant" in $$props) $$invalidate(2, variant = $$props.variant);
+    		if ("variantQuantity" in $$props) $$invalidate(3, variantQuantity = $$props.variantQuantity);
     	};
+
+    	let variantImage;
+    	let variant;
+    	let variantQuantity;
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [product];
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*selection, product*/ 257) {
+    			 variantImage = selection.selectedVariantImage || product.images[0];
+    		}
+
+    		if ($$self.$$.dirty & /*selection, product*/ 257) {
+    			 $$invalidate(2, variant = selection.selectedVariant || product.variants[0]);
+    		}
+
+    		if ($$self.$$.dirty & /*selection*/ 256) {
+    			 $$invalidate(3, variantQuantity = selection.selectedVariantQuantity || 1);
+    		}
+    	};
+
+    	return [
+    		product,
+    		addVariantToCart,
+    		variant,
+    		variantQuantity,
+    		handleOptionChange,
+    		handleQuantityChange,
+    		client,
+    		key,
+    		selection,
+    		click_handler
+    	];
     }
 
     class Product$1 extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { product: 0 });
+
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {
+    			product: 0,
+    			client: 6,
+    			addVariantToCart: 1,
+    			key: 7
+    		});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Product",
     			options,
-    			id: create_fragment$1.name
+    			id: create_fragment$3.name
     		});
 
     		const { ctx } = this.$$;
@@ -10794,6 +11730,18 @@ var app = (function () {
 
     		if (/*product*/ ctx[0] === undefined && !("product" in props)) {
     			console.warn("<Product> was created without expected prop 'product'");
+    		}
+
+    		if (/*client*/ ctx[6] === undefined && !("client" in props)) {
+    			console.warn("<Product> was created without expected prop 'client'");
+    		}
+
+    		if (/*addVariantToCart*/ ctx[1] === undefined && !("addVariantToCart" in props)) {
+    			console.warn("<Product> was created without expected prop 'addVariantToCart'");
+    		}
+
+    		if (/*key*/ ctx[7] === undefined && !("key" in props)) {
+    			console.warn("<Product> was created without expected prop 'key'");
     		}
     	}
 
@@ -10804,26 +11752,55 @@ var app = (function () {
     	set product(value) {
     		throw new Error("<Product>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get client() {
+    		throw new Error("<Product>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set client(value) {
+    		throw new Error("<Product>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get addVariantToCart() {
+    		throw new Error("<Product>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set addVariantToCart(value) {
+    		throw new Error("<Product>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get key() {
+    		throw new Error("<Product>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set key(value) {
+    		throw new Error("<Product>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src/components/Products.svelte generated by Svelte v3.31.0 */
-    const file$2 = "src/components/Products.svelte";
+    const file$4 = "src/components/Products.svelte";
 
-    function get_each_context(ctx, list, i) {
+    function get_each_context$2(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[1] = list[i];
+    	child_ctx[4] = list[i];
     	return child_ctx;
     }
 
-    // (11:4) {#each products as product}
-    function create_each_block(ctx) {
+    // (13:4) {#each products as product}
+    function create_each_block$2(ctx) {
     	let li;
     	let product;
     	let t;
     	let current;
 
     	product = new Product$1({
-    			props: { product: /*product*/ ctx[1] },
+    			props: {
+    				product: /*product*/ ctx[4],
+    				client: /*client*/ ctx[1],
+    				addVariantToCart: /*addVariantToCart*/ ctx[2],
+    				key: /*product*/ ctx[4].id.toString()
+    			},
     			$$inline: true
     		});
 
@@ -10832,7 +11809,7 @@ var app = (function () {
     			li = element("li");
     			create_component(product.$$.fragment);
     			t = space();
-    			add_location(li, file$2, 11, 8, 177);
+    			add_location(li, file$4, 13, 8, 218);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -10842,7 +11819,10 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const product_changes = {};
-    			if (dirty & /*products*/ 1) product_changes.product = /*product*/ ctx[1];
+    			if (dirty & /*products*/ 1) product_changes.product = /*product*/ ctx[4];
+    			if (dirty & /*client*/ 2) product_changes.client = /*client*/ ctx[1];
+    			if (dirty & /*addVariantToCart*/ 4) product_changes.addVariantToCart = /*addVariantToCart*/ ctx[2];
+    			if (dirty & /*products*/ 1) product_changes.key = /*product*/ ctx[4].id.toString();
     			product.$set(product_changes);
     		},
     		i: function intro(local) {
@@ -10862,67 +11842,38 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_each_block.name,
+    		id: create_each_block$2.name,
     		type: "each",
-    		source: "(11:4) {#each products as product}",
+    		source: "(13:4) {#each products as product}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (18:0) <Debug data={products}>
-    function create_default_slot$1(ctx) {
-    	let t;
-
-    	const block = {
-    		c: function create() {
-    			t = text("Products");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, t, anchor);
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(t);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_default_slot$1.name,
-    		type: "slot",
-    		source: "(18:0) <Debug data={products}>",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function create_fragment$2(ctx) {
+    function create_fragment$4(ctx) {
     	let ul;
-    	let t;
-    	let debug_1;
+    	let t0;
+    	let p;
+    	let t1;
+    	let t2_value = /*products*/ ctx[0].length + "";
+    	let t2;
+    	let t3;
+    	let button;
     	let current;
+    	let mounted;
+    	let dispose;
     	let each_value = /*products*/ ctx[0];
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
     	for (let i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
+    		each_blocks[i] = create_each_block$2(get_each_context$2(ctx, each_value, i));
     	}
 
     	const out = i => transition_out(each_blocks[i], 1, 1, () => {
     		each_blocks[i] = null;
     	});
-
-    	debug_1 = new Debug({
-    			props: {
-    				data: /*products*/ ctx[0],
-    				$$slots: { default: [create_default_slot$1] },
-    				$$scope: { ctx }
-    			},
-    			$$inline: true
-    		});
 
     	const block = {
     		c: function create() {
@@ -10932,9 +11883,16 @@ var app = (function () {
     				each_blocks[i].c();
     			}
 
-    			t = space();
-    			create_component(debug_1.$$.fragment);
-    			add_location(ul, file$2, 9, 0, 132);
+    			t0 = space();
+    			p = element("p");
+    			t1 = text("Showing ");
+    			t2 = text(t2_value);
+    			t3 = space();
+    			button = element("button");
+    			button.textContent = "Load more";
+    			add_location(ul, file$4, 11, 0, 173);
+    			add_location(p, file$4, 23, 0, 410);
+    			add_location(button, file$4, 25, 0, 444);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10946,24 +11904,45 @@ var app = (function () {
     				each_blocks[i].m(ul, null);
     			}
 
-    			insert_dev(target, t, anchor);
-    			mount_component(debug_1, target, anchor);
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, p, anchor);
+    			append_dev(p, t1);
+    			append_dev(p, t2);
+    			insert_dev(target, t3, anchor);
+    			insert_dev(target, button, anchor);
     			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(
+    					button,
+    					"click",
+    					function () {
+    						if (is_function(/*loadMore*/ ctx[3])) /*loadMore*/ ctx[3].apply(this, arguments);
+    					},
+    					false,
+    					false,
+    					false
+    				);
+
+    				mounted = true;
+    			}
     		},
-    		p: function update(ctx, [dirty]) {
-    			if (dirty & /*products*/ 1) {
+    		p: function update(new_ctx, [dirty]) {
+    			ctx = new_ctx;
+
+    			if (dirty & /*products, client, addVariantToCart*/ 7) {
     				each_value = /*products*/ ctx[0];
     				validate_each_argument(each_value);
     				let i;
 
     				for (i = 0; i < each_value.length; i += 1) {
-    					const child_ctx = get_each_context(ctx, each_value, i);
+    					const child_ctx = get_each_context$2(ctx, each_value, i);
 
     					if (each_blocks[i]) {
     						each_blocks[i].p(child_ctx, dirty);
     						transition_in(each_blocks[i], 1);
     					} else {
-    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i] = create_each_block$2(child_ctx);
     						each_blocks[i].c();
     						transition_in(each_blocks[i], 1);
     						each_blocks[i].m(ul, null);
@@ -10979,14 +11958,7 @@ var app = (function () {
     				check_outros();
     			}
 
-    			const debug_1_changes = {};
-    			if (dirty & /*products*/ 1) debug_1_changes.data = /*products*/ ctx[0];
-
-    			if (dirty & /*$$scope*/ 16) {
-    				debug_1_changes.$$scope = { dirty, ctx };
-    			}
-
-    			debug_1.$set(debug_1_changes);
+    			if ((!current || dirty & /*products*/ 1) && t2_value !== (t2_value = /*products*/ ctx[0].length + "")) set_data_dev(t2, t2_value);
     		},
     		i: function intro(local) {
     			if (current) return;
@@ -10995,7 +11967,6 @@ var app = (function () {
     				transition_in(each_blocks[i]);
     			}
 
-    			transition_in(debug_1.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
@@ -11005,20 +11976,23 @@ var app = (function () {
     				transition_out(each_blocks[i]);
     			}
 
-    			transition_out(debug_1.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(ul);
     			destroy_each(each_blocks, detaching);
-    			if (detaching) detach_dev(t);
-    			destroy_component(debug_1, detaching);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(p);
+    			if (detaching) detach_dev(t3);
+    			if (detaching) detach_dev(button);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$2.name,
+    		id: create_fragment$4.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11027,11 +12001,14 @@ var app = (function () {
     	return block;
     }
 
-    function instance$2($$self, $$props, $$invalidate) {
+    function instance$4($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Products", slots, []);
     	let { products } = $$props;
-    	const writable_props = ["products"];
+    	let { client } = $$props;
+    	let { addVariantToCart } = $$props;
+    	let { loadMore } = $$props;
+    	const writable_props = ["products", "client", "addVariantToCart", "loadMore"];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Products> was created with unknown prop '${key}'`);
@@ -11039,31 +12016,49 @@ var app = (function () {
 
     	$$self.$$set = $$props => {
     		if ("products" in $$props) $$invalidate(0, products = $$props.products);
+    		if ("client" in $$props) $$invalidate(1, client = $$props.client);
+    		if ("addVariantToCart" in $$props) $$invalidate(2, addVariantToCart = $$props.addVariantToCart);
+    		if ("loadMore" in $$props) $$invalidate(3, loadMore = $$props.loadMore);
     	};
 
-    	$$self.$capture_state = () => ({ Product: Product$1, Debug, products });
+    	$$self.$capture_state = () => ({
+    		Product: Product$1,
+    		products,
+    		client,
+    		addVariantToCart,
+    		loadMore
+    	});
 
     	$$self.$inject_state = $$props => {
     		if ("products" in $$props) $$invalidate(0, products = $$props.products);
+    		if ("client" in $$props) $$invalidate(1, client = $$props.client);
+    		if ("addVariantToCart" in $$props) $$invalidate(2, addVariantToCart = $$props.addVariantToCart);
+    		if ("loadMore" in $$props) $$invalidate(3, loadMore = $$props.loadMore);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [products];
+    	return [products, client, addVariantToCart, loadMore];
     }
 
     class Products extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { products: 0 });
+
+    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {
+    			products: 0,
+    			client: 1,
+    			addVariantToCart: 2,
+    			loadMore: 3
+    		});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Products",
     			options,
-    			id: create_fragment$2.name
+    			id: create_fragment$4.name
     		});
 
     		const { ctx } = this.$$;
@@ -11071,6 +12066,18 @@ var app = (function () {
 
     		if (/*products*/ ctx[0] === undefined && !("products" in props)) {
     			console.warn("<Products> was created without expected prop 'products'");
+    		}
+
+    		if (/*client*/ ctx[1] === undefined && !("client" in props)) {
+    			console.warn("<Products> was created without expected prop 'client'");
+    		}
+
+    		if (/*addVariantToCart*/ ctx[2] === undefined && !("addVariantToCart" in props)) {
+    			console.warn("<Products> was created without expected prop 'addVariantToCart'");
+    		}
+
+    		if (/*loadMore*/ ctx[3] === undefined && !("loadMore" in props)) {
+    			console.warn("<Products> was created without expected prop 'loadMore'");
     		}
     	}
 
@@ -11081,187 +12088,347 @@ var app = (function () {
     	set products(value) {
     		throw new Error("<Products>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get client() {
+    		throw new Error("<Products>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set client(value) {
+    		throw new Error("<Products>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get addVariantToCart() {
+    		throw new Error("<Products>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set addVariantToCart(value) {
+    		throw new Error("<Products>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get loadMore() {
+    		throw new Error("<Products>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set loadMore(value) {
+    		throw new Error("<Products>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
-    /* src/App.svelte generated by Svelte v3.31.0 */
-    const file$3 = "src/App.svelte";
+    /* src/components/CartItem.svelte generated by Svelte v3.31.0 */
+    const file$5 = "src/components/CartItem.svelte";
 
-    // (16:0) {:catch error}
-    function create_catch_block(ctx) {
-    	let p;
+    // (17:4) {#if item.variant.image}
+    function create_if_block_1$1(ctx) {
+    	let figure;
+    	let img;
+    	let img_src_value;
+    	let img_alt_value;
 
     	const block = {
     		c: function create() {
-    			p = element("p");
-    			p.textContent = "Error";
-    			add_location(p, file$3, 16, 1, 282);
+    			figure = element("figure");
+    			img = element("img");
+    			if (img.src !== (img_src_value = /*item*/ ctx[0].variant.image.src)) attr_dev(img, "src", img_src_value);
+    			attr_dev(img, "alt", img_alt_value = `${/*item*/ ctx[0].title} product shot`);
+    			add_location(img, file$5, 18, 12, 369);
+    			attr_dev(figure, "class", "svelte-1116t50");
+    			add_location(figure, file$5, 17, 8, 348);
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, p, anchor);
+    			insert_dev(target, figure, anchor);
+    			append_dev(figure, img);
     		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*item*/ 1 && img.src !== (img_src_value = /*item*/ ctx[0].variant.image.src)) {
+    				attr_dev(img, "src", img_src_value);
+    			}
+
+    			if (dirty & /*item*/ 1 && img_alt_value !== (img_alt_value = `${/*item*/ ctx[0].title} product shot`)) {
+    				attr_dev(img, "alt", img_alt_value);
+    			}
+    		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(p);
+    			if (detaching) detach_dev(figure);
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_catch_block.name,
-    		type: "catch",
-    		source: "(16:0) {:catch error}",
+    		id: create_if_block_1$1.name,
+    		type: "if",
+    		source: "(17:4) {#if item.variant.image}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (12:0) {:then products}
-    function create_then_block(ctx) {
-    	let products;
-    	let current;
+    // (27:12) {#if item.variant.title !== 'Default Title'}
+    function create_if_block$2(ctx) {
+    	let h4;
+    	let t_value = /*item*/ ctx[0].variant.title + "";
+    	let t;
 
-    	products = new Products({
-    			props: { products: /*products*/ ctx[0] },
+    	const block = {
+    		c: function create() {
+    			h4 = element("h4");
+    			t = text(t_value);
+    			add_location(h4, file$5, 27, 16, 617);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, h4, anchor);
+    			append_dev(h4, t);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*item*/ 1 && t_value !== (t_value = /*item*/ ctx[0].variant.title + "")) set_data_dev(t, t_value);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(h4);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$2.name,
+    		type: "if",
+    		source: "(27:12) {#if item.variant.title !== 'Default Title'}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (49:8) <Debug data={item}>
+    function create_default_slot$1(ctx) {
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			t = text("Cart Item");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, t, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(t);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot$1.name,
+    		type: "slot",
+    		source: "(49:8) <Debug data={item}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$5(ctx) {
+    	let li;
+    	let t0;
+    	let div4;
+    	let div0;
+    	let h3;
+    	let t1_value = /*item*/ ctx[0].title + "";
+    	let t1;
+    	let t2;
+    	let t3;
+    	let div3;
+    	let quantityselector;
+    	let t4;
+    	let div1;
+    	let span;
+    	let t5_value = /*item*/ ctx[0].variant.priceV2.currencyCode + "";
+    	let t5;
+    	let t6;
+    	let t7;
+    	let t8;
+    	let div2;
+    	let button;
+    	let t9;
+    	let button_title_value;
+    	let t10;
+    	let div5;
+    	let debug_1;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block0 = /*item*/ ctx[0].variant.image && create_if_block_1$1(ctx);
+    	let if_block1 = /*item*/ ctx[0].variant.title !== "Default Title" && create_if_block$2(ctx);
+
+    	quantityselector = new QuantitySelector({
+    			props: { value: /*item*/ ctx[0].quantity },
+    			$$inline: true
+    		});
+
+    	quantityselector.$on("change", /*change_handler*/ ctx[5]);
+
+    	debug_1 = new Debug({
+    			props: {
+    				data: /*item*/ ctx[0],
+    				$$slots: { default: [create_default_slot$1] },
+    				$$scope: { ctx }
+    			},
     			$$inline: true
     		});
 
     	const block = {
     		c: function create() {
-    			create_component(products.$$.fragment);
-    		},
-    		m: function mount(target, anchor) {
-    			mount_component(products, target, anchor);
-    			current = true;
-    		},
-    		p: noop,
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(products.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(products.$$.fragment, local);
-    			current = false;
-    		},
-    		d: function destroy(detaching) {
-    			destroy_component(products, detaching);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_then_block.name,
-    		type: "then",
-    		source: "(12:0) {:then products}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (10:34)   <p>Loading</p> {:then products}
-    function create_pending_block(ctx) {
-    	let p;
-
-    	const block = {
-    		c: function create() {
-    			p = element("p");
-    			p.textContent = "Loading";
-    			add_location(p, file$3, 10, 1, 207);
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, p, anchor);
-    		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(p);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_pending_block.name,
-    		type: "pending",
-    		source: "(10:34)   <p>Loading</p> {:then products}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    function create_fragment$3(ctx) {
-    	let await_block_anchor;
-    	let promise;
-    	let current;
-
-    	let info = {
-    		ctx,
-    		current: null,
-    		token: null,
-    		hasCatch: true,
-    		pending: create_pending_block,
-    		then: create_then_block,
-    		catch: create_catch_block,
-    		value: 0,
-    		error: 1,
-    		blocks: [,,,]
-    	};
-
-    	handle_promise(promise = client.product.fetchAll(), info);
-
-    	const block = {
-    		c: function create() {
-    			await_block_anchor = empty();
-    			info.block.c();
+    			li = element("li");
+    			if (if_block0) if_block0.c();
+    			t0 = space();
+    			div4 = element("div");
+    			div0 = element("div");
+    			h3 = element("h3");
+    			t1 = text(t1_value);
+    			t2 = space();
+    			if (if_block1) if_block1.c();
+    			t3 = space();
+    			div3 = element("div");
+    			create_component(quantityselector.$$.fragment);
+    			t4 = space();
+    			div1 = element("div");
+    			span = element("span");
+    			t5 = text(t5_value);
+    			t6 = space();
+    			t7 = text(/*price*/ ctx[3]);
+    			t8 = space();
+    			div2 = element("div");
+    			button = element("button");
+    			t9 = text("×");
+    			t10 = space();
+    			div5 = element("div");
+    			create_component(debug_1.$$.fragment);
+    			add_location(h3, file$5, 25, 12, 522);
+    			add_location(div0, file$5, 24, 8, 504);
+    			add_location(span, file$5, 36, 16, 883);
+    			attr_dev(div1, "class", "price svelte-1116t50");
+    			add_location(div1, file$5, 35, 12, 847);
+    			attr_dev(button, "class", "remove");
+    			attr_dev(button, "title", button_title_value = "Remove " + /*item*/ ctx[0].title + " from cart");
+    			add_location(button, file$5, 40, 16, 994);
+    			attr_dev(div2, "class", "svelte-1116t50");
+    			add_location(div2, file$5, 39, 12, 972);
+    			attr_dev(div3, "class", "options svelte-1116t50");
+    			add_location(div3, file$5, 31, 8, 689);
+    			attr_dev(div4, "class", "details svelte-1116t50");
+    			add_location(div4, file$5, 22, 4, 473);
+    			attr_dev(div5, "class", "full svelte-1116t50");
+    			add_location(div5, file$5, 47, 4, 1164);
+    			attr_dev(li, "class", "svelte-1116t50");
+    			add_location(li, file$5, 14, 0, 305);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, await_block_anchor, anchor);
-    			info.block.m(target, info.anchor = anchor);
-    			info.mount = () => await_block_anchor.parentNode;
-    			info.anchor = await_block_anchor;
+    			insert_dev(target, li, anchor);
+    			if (if_block0) if_block0.m(li, null);
+    			append_dev(li, t0);
+    			append_dev(li, div4);
+    			append_dev(div4, div0);
+    			append_dev(div0, h3);
+    			append_dev(h3, t1);
+    			append_dev(div0, t2);
+    			if (if_block1) if_block1.m(div0, null);
+    			append_dev(div4, t3);
+    			append_dev(div4, div3);
+    			mount_component(quantityselector, div3, null);
+    			append_dev(div3, t4);
+    			append_dev(div3, div1);
+    			append_dev(div1, span);
+    			append_dev(span, t5);
+    			append_dev(span, t6);
+    			append_dev(span, t7);
+    			append_dev(div3, t8);
+    			append_dev(div3, div2);
+    			append_dev(div2, button);
+    			append_dev(button, t9);
+    			append_dev(li, t10);
+    			append_dev(li, div5);
+    			mount_component(debug_1, div5, null);
     			current = true;
-    		},
-    		p: function update(new_ctx, [dirty]) {
-    			ctx = new_ctx;
 
-    			{
-    				const child_ctx = ctx.slice();
-    				child_ctx[0] = child_ctx[1] = info.resolved;
-    				info.block.p(child_ctx, dirty);
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*click_handler*/ ctx[6], false, false, false);
+    				mounted = true;
     			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (/*item*/ ctx[0].variant.image) {
+    				if (if_block0) {
+    					if_block0.p(ctx, dirty);
+    				} else {
+    					if_block0 = create_if_block_1$1(ctx);
+    					if_block0.c();
+    					if_block0.m(li, t0);
+    				}
+    			} else if (if_block0) {
+    				if_block0.d(1);
+    				if_block0 = null;
+    			}
+
+    			if ((!current || dirty & /*item*/ 1) && t1_value !== (t1_value = /*item*/ ctx[0].title + "")) set_data_dev(t1, t1_value);
+
+    			if (/*item*/ ctx[0].variant.title !== "Default Title") {
+    				if (if_block1) {
+    					if_block1.p(ctx, dirty);
+    				} else {
+    					if_block1 = create_if_block$2(ctx);
+    					if_block1.c();
+    					if_block1.m(div0, null);
+    				}
+    			} else if (if_block1) {
+    				if_block1.d(1);
+    				if_block1 = null;
+    			}
+
+    			const quantityselector_changes = {};
+    			if (dirty & /*item*/ 1) quantityselector_changes.value = /*item*/ ctx[0].quantity;
+    			quantityselector.$set(quantityselector_changes);
+    			if ((!current || dirty & /*item*/ 1) && t5_value !== (t5_value = /*item*/ ctx[0].variant.priceV2.currencyCode + "")) set_data_dev(t5, t5_value);
+    			if (!current || dirty & /*price*/ 8) set_data_dev(t7, /*price*/ ctx[3]);
+
+    			if (!current || dirty & /*item*/ 1 && button_title_value !== (button_title_value = "Remove " + /*item*/ ctx[0].title + " from cart")) {
+    				attr_dev(button, "title", button_title_value);
+    			}
+
+    			const debug_1_changes = {};
+    			if (dirty & /*item*/ 1) debug_1_changes.data = /*item*/ ctx[0];
+
+    			if (dirty & /*$$scope*/ 128) {
+    				debug_1_changes.$$scope = { dirty, ctx };
+    			}
+
+    			debug_1.$set(debug_1_changes);
     		},
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(info.block);
+    			transition_in(quantityselector.$$.fragment, local);
+    			transition_in(debug_1.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
-    			for (let i = 0; i < 3; i += 1) {
-    				const block = info.blocks[i];
-    				transition_out(block);
-    			}
-
+    			transition_out(quantityselector.$$.fragment, local);
+    			transition_out(debug_1.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(await_block_anchor);
-    			info.block.d(detaching);
-    			info.token = null;
-    			info = null;
+    			if (detaching) detach_dev(li);
+    			if (if_block0) if_block0.d();
+    			if (if_block1) if_block1.d();
+    			destroy_component(quantityselector);
+    			destroy_component(debug_1);
+    			mounted = false;
+    			dispose();
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$3.name,
+    		id: create_fragment$5.name,
     		type: "component",
     		source: "",
     		ctx
@@ -11270,7 +12437,1383 @@ var app = (function () {
     	return block;
     }
 
-    function instance$3($$self, $$props, $$invalidate) {
+    function instance$5($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("CartItem", slots, []);
+    	let { item } = $$props;
+    	let { updateQuantityInCart } = $$props;
+    	let { removeLineItemInCart } = $$props;
+    	let { key } = $$props;
+    	const writable_props = ["item", "updateQuantityInCart", "removeLineItemInCart", "key"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<CartItem> was created with unknown prop '${key}'`);
+    	});
+
+    	const change_handler = event => updateQuantityInCart(item.id, event.detail);
+    	const click_handler = () => removeLineItemInCart(item.id);
+
+    	$$self.$$set = $$props => {
+    		if ("item" in $$props) $$invalidate(0, item = $$props.item);
+    		if ("updateQuantityInCart" in $$props) $$invalidate(1, updateQuantityInCart = $$props.updateQuantityInCart);
+    		if ("removeLineItemInCart" in $$props) $$invalidate(2, removeLineItemInCart = $$props.removeLineItemInCart);
+    		if ("key" in $$props) $$invalidate(4, key = $$props.key);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		QuantitySelector,
+    		Debug,
+    		item,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		key,
+    		price
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("item" in $$props) $$invalidate(0, item = $$props.item);
+    		if ("updateQuantityInCart" in $$props) $$invalidate(1, updateQuantityInCart = $$props.updateQuantityInCart);
+    		if ("removeLineItemInCart" in $$props) $$invalidate(2, removeLineItemInCart = $$props.removeLineItemInCart);
+    		if ("key" in $$props) $$invalidate(4, key = $$props.key);
+    		if ("price" in $$props) $$invalidate(3, price = $$props.price);
+    	};
+
+    	let price;
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*item*/ 1) {
+    			 $$invalidate(3, price = (item.quantity * item.variant.price).toFixed(2));
+    		}
+    	};
+
+    	return [
+    		item,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		price,
+    		key,
+    		change_handler,
+    		click_handler
+    	];
+    }
+
+    class CartItem extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+
+    		init(this, options, instance$5, create_fragment$5, safe_not_equal, {
+    			item: 0,
+    			updateQuantityInCart: 1,
+    			removeLineItemInCart: 2,
+    			key: 4
+    		});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "CartItem",
+    			options,
+    			id: create_fragment$5.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*item*/ ctx[0] === undefined && !("item" in props)) {
+    			console.warn("<CartItem> was created without expected prop 'item'");
+    		}
+
+    		if (/*updateQuantityInCart*/ ctx[1] === undefined && !("updateQuantityInCart" in props)) {
+    			console.warn("<CartItem> was created without expected prop 'updateQuantityInCart'");
+    		}
+
+    		if (/*removeLineItemInCart*/ ctx[2] === undefined && !("removeLineItemInCart" in props)) {
+    			console.warn("<CartItem> was created without expected prop 'removeLineItemInCart'");
+    		}
+
+    		if (/*key*/ ctx[4] === undefined && !("key" in props)) {
+    			console.warn("<CartItem> was created without expected prop 'key'");
+    		}
+    	}
+
+    	get item() {
+    		throw new Error("<CartItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set item(value) {
+    		throw new Error("<CartItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get updateQuantityInCart() {
+    		throw new Error("<CartItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set updateQuantityInCart(value) {
+    		throw new Error("<CartItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get removeLineItemInCart() {
+    		throw new Error("<CartItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set removeLineItemInCart(value) {
+    		throw new Error("<CartItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get key() {
+    		throw new Error("<CartItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set key(value) {
+    		throw new Error("<CartItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/components/Cart.svelte generated by Svelte v3.31.0 */
+    const file$6 = "src/components/Cart.svelte";
+
+    function get_each_context$3(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[7] = list[i];
+    	return child_ctx;
+    }
+
+    // (20:0) {#if showCart}
+    function create_if_block$3(ctx) {
+    	let div2;
+    	let div1;
+    	let div0;
+    	let button;
+    	let t1;
+    	let header;
+    	let h2;
+    	let t3;
+    	let current_block_type_index;
+    	let if_block;
+    	let t4;
+    	let debug_1;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	const if_block_creators = [create_if_block_1$2, create_else_block];
+    	const if_blocks = [];
+
+    	function select_block_type(ctx, dirty) {
+    		if (/*empty*/ ctx[5]) return 0;
+    		return 1;
+    	}
+
+    	current_block_type_index = select_block_type(ctx);
+    	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+
+    	debug_1 = new Debug({
+    			props: {
+    				data: /*checkout*/ ctx[0],
+    				$$slots: { default: [create_default_slot$2] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			div2 = element("div");
+    			div1 = element("div");
+    			div0 = element("div");
+    			button = element("button");
+    			button.textContent = "×";
+    			t1 = space();
+    			header = element("header");
+    			h2 = element("h2");
+    			h2.textContent = "Your cart";
+    			t3 = space();
+    			if_block.c();
+    			t4 = space();
+    			create_component(debug_1.$$.fragment);
+    			add_location(button, file$6, 24, 16, 499);
+    			attr_dev(div0, "class", "close svelte-bs15");
+    			add_location(div0, file$6, 23, 12, 463);
+    			add_location(h2, file$6, 28, 16, 602);
+    			add_location(header, file$6, 27, 12, 577);
+    			attr_dev(div1, "class", "cart svelte-bs15");
+    			add_location(div1, file$6, 21, 8, 431);
+    			attr_dev(div2, "class", "wrapper svelte-bs15");
+    			add_location(div2, file$6, 20, 4, 401);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, div1);
+    			append_dev(div1, div0);
+    			append_dev(div0, button);
+    			append_dev(div1, t1);
+    			append_dev(div1, header);
+    			append_dev(header, h2);
+    			append_dev(div1, t3);
+    			if_blocks[current_block_type_index].m(div1, null);
+    			append_dev(div1, t4);
+    			mount_component(debug_1, div1, null);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(
+    					button,
+    					"click",
+    					function () {
+    						if (is_function(/*handleCartClose*/ ctx[2])) /*handleCartClose*/ ctx[2].apply(this, arguments);
+    					},
+    					false,
+    					false,
+    					false
+    				);
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+    			let previous_block_index = current_block_type_index;
+    			current_block_type_index = select_block_type(ctx);
+
+    			if (current_block_type_index === previous_block_index) {
+    				if_blocks[current_block_type_index].p(ctx, dirty);
+    			} else {
+    				group_outros();
+
+    				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+    					if_blocks[previous_block_index] = null;
+    				});
+
+    				check_outros();
+    				if_block = if_blocks[current_block_type_index];
+
+    				if (!if_block) {
+    					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    					if_block.c();
+    				} else {
+    					if_block.p(ctx, dirty);
+    				}
+
+    				transition_in(if_block, 1);
+    				if_block.m(div1, t4);
+    			}
+
+    			const debug_1_changes = {};
+    			if (dirty & /*checkout*/ 1) debug_1_changes.data = /*checkout*/ ctx[0];
+
+    			if (dirty & /*$$scope*/ 1024) {
+    				debug_1_changes.$$scope = { dirty, ctx };
+    			}
+
+    			debug_1.$set(debug_1_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			transition_in(debug_1.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			transition_out(debug_1.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div2);
+    			if_blocks[current_block_type_index].d();
+    			destroy_component(debug_1);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$3.name,
+    		type: "if",
+    		source: "(20:0) {#if showCart}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (36:12) {:else}
+    function create_else_block(ctx) {
+    	let ul;
+    	let t0;
+    	let footer;
+    	let dl0;
+    	let dt0;
+    	let dd0;
+    	let t2_value = /*checkout*/ ctx[0].currencyCode + "";
+    	let t2;
+    	let t3;
+    	let t4_value = /*checkout*/ ctx[0].subtotalPrice + "";
+    	let t4;
+    	let t5;
+    	let dl1;
+    	let dt1;
+    	let dd1;
+    	let t7_value = /*checkout*/ ctx[0].currencyCode + "";
+    	let t7;
+    	let t8;
+    	let t9_value = /*checkout*/ ctx[0].totalTax + "";
+    	let t9;
+    	let t10;
+    	let dl2;
+    	let dt2;
+    	let dd2;
+    	let t12_value = /*checkout*/ ctx[0].currencyCode + "";
+    	let t12;
+    	let t13;
+    	let t14_value = /*checkout*/ ctx[0].subtotalPrice + "";
+    	let t14;
+    	let t15;
+    	let button;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let each_value = /*checkout*/ ctx[0].lineItems;
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block$3(get_each_context$3(ctx, each_value, i));
+    	}
+
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
+
+    	const block = {
+    		c: function create() {
+    			ul = element("ul");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			t0 = space();
+    			footer = element("footer");
+    			dl0 = element("dl");
+    			dt0 = element("dt");
+    			dt0.textContent = "Subtotal";
+    			dd0 = element("dd");
+    			t2 = text(t2_value);
+    			t3 = space();
+    			t4 = text(t4_value);
+    			t5 = space();
+    			dl1 = element("dl");
+    			dt1 = element("dt");
+    			dt1.textContent = "Taxes";
+    			dd1 = element("dd");
+    			t7 = text(t7_value);
+    			t8 = space();
+    			t9 = text(t9_value);
+    			t10 = space();
+    			dl2 = element("dl");
+    			dt2 = element("dt");
+    			dt2.textContent = "Total";
+    			dd2 = element("dd");
+    			t12 = text(t12_value);
+    			t13 = space();
+    			t14 = text(t14_value);
+    			t15 = space();
+    			button = element("button");
+    			button.textContent = "Checkout";
+    			add_location(ul, file$6, 37, 16, 760);
+    			add_location(dt0, file$6, 50, 24, 1209);
+    			add_location(dd0, file$6, 51, 24, 1251);
+    			attr_dev(dl0, "class", "subtotal svelte-bs15");
+    			add_location(dl0, file$6, 49, 20, 1163);
+    			add_location(dt1, file$6, 54, 24, 1398);
+    			add_location(dd1, file$6, 55, 24, 1437);
+    			attr_dev(dl1, "class", "taxes svelte-bs15");
+    			add_location(dl1, file$6, 53, 20, 1355);
+    			add_location(dt2, file$6, 58, 24, 1582);
+    			add_location(dd2, file$6, 59, 24, 1621);
+    			attr_dev(dl2, "class", "subtotal svelte-bs15");
+    			add_location(dl2, file$6, 57, 20, 1536);
+    			attr_dev(button, "class", "checkout");
+    			add_location(button, file$6, 61, 20, 1725);
+    			attr_dev(footer, "class", "svelte-bs15");
+    			add_location(footer, file$6, 48, 16, 1134);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, ul, anchor);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(ul, null);
+    			}
+
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, footer, anchor);
+    			append_dev(footer, dl0);
+    			append_dev(dl0, dt0);
+    			append_dev(dl0, dd0);
+    			append_dev(dd0, t2);
+    			append_dev(dd0, t3);
+    			append_dev(dd0, t4);
+    			append_dev(footer, t5);
+    			append_dev(footer, dl1);
+    			append_dev(dl1, dt1);
+    			append_dev(dl1, dd1);
+    			append_dev(dd1, t7);
+    			append_dev(dd1, t8);
+    			append_dev(dd1, t9);
+    			append_dev(footer, t10);
+    			append_dev(footer, dl2);
+    			append_dev(dl2, dt2);
+    			append_dev(dl2, dd2);
+    			append_dev(dd2, t12);
+    			append_dev(dd2, t13);
+    			append_dev(dd2, t14);
+    			append_dev(footer, t15);
+    			append_dev(footer, button);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*openCheckout*/ ctx[6], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*updateQuantityInCart, removeLineItemInCart, checkout*/ 25) {
+    				each_value = /*checkout*/ ctx[0].lineItems;
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context$3(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    						transition_in(each_blocks[i], 1);
+    					} else {
+    						each_blocks[i] = create_each_block$3(child_ctx);
+    						each_blocks[i].c();
+    						transition_in(each_blocks[i], 1);
+    						each_blocks[i].m(ul, null);
+    					}
+    				}
+
+    				group_outros();
+
+    				for (i = each_value.length; i < each_blocks.length; i += 1) {
+    					out(i);
+    				}
+
+    				check_outros();
+    			}
+
+    			if ((!current || dirty & /*checkout*/ 1) && t2_value !== (t2_value = /*checkout*/ ctx[0].currencyCode + "")) set_data_dev(t2, t2_value);
+    			if ((!current || dirty & /*checkout*/ 1) && t4_value !== (t4_value = /*checkout*/ ctx[0].subtotalPrice + "")) set_data_dev(t4, t4_value);
+    			if ((!current || dirty & /*checkout*/ 1) && t7_value !== (t7_value = /*checkout*/ ctx[0].currencyCode + "")) set_data_dev(t7, t7_value);
+    			if ((!current || dirty & /*checkout*/ 1) && t9_value !== (t9_value = /*checkout*/ ctx[0].totalTax + "")) set_data_dev(t9, t9_value);
+    			if ((!current || dirty & /*checkout*/ 1) && t12_value !== (t12_value = /*checkout*/ ctx[0].currencyCode + "")) set_data_dev(t12, t12_value);
+    			if ((!current || dirty & /*checkout*/ 1) && t14_value !== (t14_value = /*checkout*/ ctx[0].subtotalPrice + "")) set_data_dev(t14, t14_value);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+
+    			for (let i = 0; i < each_value.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			each_blocks = each_blocks.filter(Boolean);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(ul);
+    			destroy_each(each_blocks, detaching);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(footer);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_else_block.name,
+    		type: "else",
+    		source: "(36:12) {:else}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (32:12) {#if empty}
+    function create_if_block_1$2(ctx) {
+    	let p;
+
+    	const block = {
+    		c: function create() {
+    			p = element("p");
+    			p.textContent = "Your cart is currently empty.";
+    			add_location(p, file$6, 33, 16, 685);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, p, anchor);
+    		},
+    		p: noop,
+    		i: noop,
+    		o: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(p);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1$2.name,
+    		type: "if",
+    		source: "(32:12) {#if empty}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (39:20) {#each checkout.lineItems as item}
+    function create_each_block$3(ctx) {
+    	let item;
+    	let current;
+
+    	item = new CartItem({
+    			props: {
+    				updateQuantityInCart: /*updateQuantityInCart*/ ctx[3],
+    				removeLineItemInCart: /*removeLineItemInCart*/ ctx[4],
+    				item: /*item*/ ctx[7],
+    				key: /*item*/ ctx[7].id.toString()
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(item.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(item, target, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			const item_changes = {};
+    			if (dirty & /*updateQuantityInCart*/ 8) item_changes.updateQuantityInCart = /*updateQuantityInCart*/ ctx[3];
+    			if (dirty & /*removeLineItemInCart*/ 16) item_changes.removeLineItemInCart = /*removeLineItemInCart*/ ctx[4];
+    			if (dirty & /*checkout*/ 1) item_changes.item = /*item*/ ctx[7];
+    			if (dirty & /*checkout*/ 1) item_changes.key = /*item*/ ctx[7].id.toString();
+    			item.$set(item_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(item.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(item.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(item, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block$3.name,
+    		type: "each",
+    		source: "(39:20) {#each checkout.lineItems as item}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (67:12) <Debug data={checkout}>
+    function create_default_slot$2(ctx) {
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			t = text("Checkout");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, t, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(t);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot$2.name,
+    		type: "slot",
+    		source: "(67:12) <Debug data={checkout}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$6(ctx) {
+    	let if_block_anchor;
+    	let current;
+    	let if_block = /*showCart*/ ctx[1] && create_if_block$3(ctx);
+
+    	const block = {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			if_block_anchor = empty();
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert_dev(target, if_block_anchor, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (/*showCart*/ ctx[1]) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+
+    					if (dirty & /*showCart*/ 2) {
+    						transition_in(if_block, 1);
+    					}
+    				} else {
+    					if_block = create_if_block$3(ctx);
+    					if_block.c();
+    					transition_in(if_block, 1);
+    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+
+    				transition_out(if_block, 1, 1, () => {
+    					if_block = null;
+    				});
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+    			if (detaching) detach_dev(if_block_anchor);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$6.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$6($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Cart", slots, []);
+    	let { checkout } = $$props;
+    	let { showCart } = $$props;
+    	let { handleCartClose } = $$props;
+    	let { updateQuantityInCart } = $$props;
+    	let { removeLineItemInCart } = $$props;
+
+    	function openCheckout() {
+    		window.open(checkout.webUrl);
+    	}
+
+    	const writable_props = [
+    		"checkout",
+    		"showCart",
+    		"handleCartClose",
+    		"updateQuantityInCart",
+    		"removeLineItemInCart"
+    	];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<Cart> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ("checkout" in $$props) $$invalidate(0, checkout = $$props.checkout);
+    		if ("showCart" in $$props) $$invalidate(1, showCart = $$props.showCart);
+    		if ("handleCartClose" in $$props) $$invalidate(2, handleCartClose = $$props.handleCartClose);
+    		if ("updateQuantityInCart" in $$props) $$invalidate(3, updateQuantityInCart = $$props.updateQuantityInCart);
+    		if ("removeLineItemInCart" in $$props) $$invalidate(4, removeLineItemInCart = $$props.removeLineItemInCart);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		Item: CartItem,
+    		Debug,
+    		checkout,
+    		showCart,
+    		handleCartClose,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		openCheckout,
+    		empty
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("checkout" in $$props) $$invalidate(0, checkout = $$props.checkout);
+    		if ("showCart" in $$props) $$invalidate(1, showCart = $$props.showCart);
+    		if ("handleCartClose" in $$props) $$invalidate(2, handleCartClose = $$props.handleCartClose);
+    		if ("updateQuantityInCart" in $$props) $$invalidate(3, updateQuantityInCart = $$props.updateQuantityInCart);
+    		if ("removeLineItemInCart" in $$props) $$invalidate(4, removeLineItemInCart = $$props.removeLineItemInCart);
+    		if ("empty" in $$props) $$invalidate(5, empty = $$props.empty);
+    	};
+
+    	let empty;
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*checkout*/ 1) {
+    			 $$invalidate(5, empty = checkout.lineItems.length < 1);
+    		}
+    	};
+
+    	return [
+    		checkout,
+    		showCart,
+    		handleCartClose,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		empty,
+    		openCheckout
+    	];
+    }
+
+    class Cart extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+
+    		init(this, options, instance$6, create_fragment$6, safe_not_equal, {
+    			checkout: 0,
+    			showCart: 1,
+    			handleCartClose: 2,
+    			updateQuantityInCart: 3,
+    			removeLineItemInCart: 4
+    		});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Cart",
+    			options,
+    			id: create_fragment$6.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*checkout*/ ctx[0] === undefined && !("checkout" in props)) {
+    			console.warn("<Cart> was created without expected prop 'checkout'");
+    		}
+
+    		if (/*showCart*/ ctx[1] === undefined && !("showCart" in props)) {
+    			console.warn("<Cart> was created without expected prop 'showCart'");
+    		}
+
+    		if (/*handleCartClose*/ ctx[2] === undefined && !("handleCartClose" in props)) {
+    			console.warn("<Cart> was created without expected prop 'handleCartClose'");
+    		}
+
+    		if (/*updateQuantityInCart*/ ctx[3] === undefined && !("updateQuantityInCart" in props)) {
+    			console.warn("<Cart> was created without expected prop 'updateQuantityInCart'");
+    		}
+
+    		if (/*removeLineItemInCart*/ ctx[4] === undefined && !("removeLineItemInCart" in props)) {
+    			console.warn("<Cart> was created without expected prop 'removeLineItemInCart'");
+    		}
+    	}
+
+    	get checkout() {
+    		throw new Error("<Cart>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set checkout(value) {
+    		throw new Error("<Cart>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get showCart() {
+    		throw new Error("<Cart>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set showCart(value) {
+    		throw new Error("<Cart>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get handleCartClose() {
+    		throw new Error("<Cart>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set handleCartClose(value) {
+    		throw new Error("<Cart>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get updateQuantityInCart() {
+    		throw new Error("<Cart>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set updateQuantityInCart(value) {
+    		throw new Error("<Cart>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get removeLineItemInCart() {
+    		throw new Error("<Cart>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set removeLineItemInCart(value) {
+    		throw new Error("<Cart>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/components/Shop.svelte generated by Svelte v3.31.0 */
+
+    const { console: console_1 } = globals;
+    const file$7 = "src/components/Shop.svelte";
+
+    // (97:1) {#if !showCart}
+    function create_if_block_1$3(ctx) {
+    	let div;
+    	let button;
+    	let t0;
+    	let t1;
+    	let t2;
+    	let t3;
+    	let t4;
+    	let mounted;
+    	let dispose;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			button = element("button");
+    			t0 = text("Open cart ( ");
+    			t1 = text(/*itemsInCart*/ ctx[4]);
+    			t2 = text(" | ");
+    			t3 = text(/*totalInCart*/ ctx[5]);
+    			t4 = text(" )");
+    			add_location(button, file$7, 98, 3, 2168);
+    			attr_dev(div, "class", "cart-button svelte-ofzr4o");
+    			add_location(div, file$7, 97, 2, 2139);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			append_dev(div, button);
+    			append_dev(button, t0);
+    			append_dev(button, t1);
+    			append_dev(button, t2);
+    			append_dev(button, t3);
+    			append_dev(button, t4);
+
+    			if (!mounted) {
+    				dispose = listen_dev(button, "click", /*click_handler*/ ctx[10], false, false, false);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*itemsInCart*/ 16) set_data_dev(t1, /*itemsInCart*/ ctx[4]);
+    			if (dirty & /*totalInCart*/ 32) set_data_dev(t3, /*totalInCart*/ ctx[5]);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block_1$3.name,
+    		type: "if",
+    		source: "(97:1) {#if !showCart}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (107:3) {#if shop.description}
+    function create_if_block$4(ctx) {
+    	let h2;
+    	let t_value = /*shop*/ ctx[3].description + "";
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			h2 = element("h2");
+    			t = text(t_value);
+    			add_location(h2, file$7, 107, 4, 2351);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, h2, anchor);
+    			append_dev(h2, t);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*shop*/ 8 && t_value !== (t_value = /*shop*/ ctx[3].description + "")) set_data_dev(t, t_value);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(h2);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block$4.name,
+    		type: "if",
+    		source: "(107:3) {#if shop.description}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (112:2) <Debug data={shop}>
+    function create_default_slot$3(ctx) {
+    	let t;
+
+    	const block = {
+    		c: function create() {
+    			t = text("Shop");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, t, anchor);
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(t);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot$3.name,
+    		type: "slot",
+    		source: "(112:2) <Debug data={shop}>",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$7(ctx) {
+    	let main;
+    	let t0;
+    	let header;
+    	let div;
+    	let h1;
+    	let t1_value = /*shop*/ ctx[3].name + "";
+    	let t1;
+    	let t2;
+    	let t3;
+    	let debug_1;
+    	let t4;
+    	let products_1;
+    	let t5;
+    	let cart;
+    	let current;
+    	let if_block0 = !/*showCart*/ ctx[1] && create_if_block_1$3(ctx);
+    	let if_block1 = /*shop*/ ctx[3].description && create_if_block$4(ctx);
+
+    	debug_1 = new Debug({
+    			props: {
+    				data: /*shop*/ ctx[3],
+    				$$slots: { default: [create_default_slot$3] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	products_1 = new Products({
+    			props: {
+    				products: /*products*/ ctx[2],
+    				client,
+    				addVariantToCart: /*addVariantToCart*/ ctx[6],
+    				loadMore
+    			},
+    			$$inline: true
+    		});
+
+    	cart = new Cart({
+    			props: {
+    				checkout: /*checkout*/ ctx[0],
+    				showCart: /*showCart*/ ctx[1],
+    				handleCartClose: /*handleCartClose*/ ctx[9],
+    				updateQuantityInCart: /*updateQuantityInCart*/ ctx[7],
+    				removeLineItemInCart: /*removeLineItemInCart*/ ctx[8]
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			main = element("main");
+    			if (if_block0) if_block0.c();
+    			t0 = space();
+    			header = element("header");
+    			div = element("div");
+    			h1 = element("h1");
+    			t1 = text(t1_value);
+    			t2 = space();
+    			if (if_block1) if_block1.c();
+    			t3 = space();
+    			create_component(debug_1.$$.fragment);
+    			t4 = space();
+    			create_component(products_1.$$.fragment);
+    			t5 = space();
+    			create_component(cart.$$.fragment);
+    			add_location(h1, file$7, 105, 3, 2300);
+    			add_location(div, file$7, 104, 2, 2291);
+    			attr_dev(header, "class", "svelte-ofzr4o");
+    			add_location(header, file$7, 102, 1, 2279);
+    			attr_dev(main, "class", "svelte-ofzr4o");
+    			add_location(main, file$7, 94, 0, 2112);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, main, anchor);
+    			if (if_block0) if_block0.m(main, null);
+    			append_dev(main, t0);
+    			append_dev(main, header);
+    			append_dev(header, div);
+    			append_dev(div, h1);
+    			append_dev(h1, t1);
+    			append_dev(div, t2);
+    			if (if_block1) if_block1.m(div, null);
+    			append_dev(header, t3);
+    			mount_component(debug_1, header, null);
+    			append_dev(main, t4);
+    			mount_component(products_1, main, null);
+    			append_dev(main, t5);
+    			mount_component(cart, main, null);
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (!/*showCart*/ ctx[1]) {
+    				if (if_block0) {
+    					if_block0.p(ctx, dirty);
+    				} else {
+    					if_block0 = create_if_block_1$3(ctx);
+    					if_block0.c();
+    					if_block0.m(main, t0);
+    				}
+    			} else if (if_block0) {
+    				if_block0.d(1);
+    				if_block0 = null;
+    			}
+
+    			if ((!current || dirty & /*shop*/ 8) && t1_value !== (t1_value = /*shop*/ ctx[3].name + "")) set_data_dev(t1, t1_value);
+
+    			if (/*shop*/ ctx[3].description) {
+    				if (if_block1) {
+    					if_block1.p(ctx, dirty);
+    				} else {
+    					if_block1 = create_if_block$4(ctx);
+    					if_block1.c();
+    					if_block1.m(div, null);
+    				}
+    			} else if (if_block1) {
+    				if_block1.d(1);
+    				if_block1 = null;
+    			}
+
+    			const debug_1_changes = {};
+    			if (dirty & /*shop*/ 8) debug_1_changes.data = /*shop*/ ctx[3];
+
+    			if (dirty & /*$$scope*/ 2048) {
+    				debug_1_changes.$$scope = { dirty, ctx };
+    			}
+
+    			debug_1.$set(debug_1_changes);
+    			const products_1_changes = {};
+    			if (dirty & /*products*/ 4) products_1_changes.products = /*products*/ ctx[2];
+    			products_1.$set(products_1_changes);
+    			const cart_changes = {};
+    			if (dirty & /*checkout*/ 1) cart_changes.checkout = /*checkout*/ ctx[0];
+    			if (dirty & /*showCart*/ 2) cart_changes.showCart = /*showCart*/ ctx[1];
+    			cart.$set(cart_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(debug_1.$$.fragment, local);
+    			transition_in(products_1.$$.fragment, local);
+    			transition_in(cart.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(debug_1.$$.fragment, local);
+    			transition_out(products_1.$$.fragment, local);
+    			transition_out(cart.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(main);
+    			if (if_block0) if_block0.d();
+    			if (if_block1) if_block1.d();
+    			destroy_component(debug_1);
+    			destroy_component(products_1);
+    			destroy_component(cart);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$7.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    const collectionId = false;
+    const productsPerPage = 15;
+
+    function encodeShopifyId(id, type = "Collection") {
+    	return btoa(`gid://shopify/${type}/${id}`);
+    }
+
+    function loadMore() {
+    	console.log("[ToDo] load more...");
+    }
+
+    function instance$7($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("Shop", slots, []);
+    	let showCart = false;
+    	let checkout = { lineItems: [] };
+    	let products = [];
+    	let shop = {};
+
+    	onMount(() => {
+    		// load checkout
+    		client.checkout.create().then(res => {
+    			$$invalidate(0, checkout = res);
+    		}).catch(error => {
+    			console.error(error);
+    		});
+
+    		// load shop info
+    		client.shop.fetchInfo().then(res => {
+    			$$invalidate(3, shop = res);
+    		}).catch(error => {
+    			console.error(error);
+    		});
+
+    		{
+    			console.log(client.product);
+
+    			// load all products from shop
+    			client.product.fetchAll(productsPerPage).then(res => {
+    				$$invalidate(2, products = res);
+    			}).catch(error => {
+    				console.error(error);
+    			});
+    		}
+    	});
+
+    	function addVariantToCart(variantId, quantity) {
+    		$$invalidate(1, showCart = true);
+
+    		const lineItemsToAdd = [
+    			{
+    				variantId,
+    				quantity: parseInt(quantity, 10)
+    			}
+    		];
+
+    		return client.checkout.addLineItems(checkout.id, lineItemsToAdd).then(res => {
+    			$$invalidate(0, checkout = res);
+    		});
+    	}
+
+    	function updateQuantityInCart(lineItemId, quantity) {
+    		const lineItemsToUpdate = [
+    			{
+    				id: lineItemId,
+    				quantity: parseInt(quantity, 10)
+    			}
+    		];
+
+    		return client.checkout.updateLineItems(checkout.id, lineItemsToUpdate).then(res => {
+    			$$invalidate(0, checkout = res);
+    		});
+    	}
+
+    	function removeLineItemInCart(lineItemId) {
+    		return client.checkout.removeLineItems(checkout.id, [lineItemId]).then(res => {
+    			$$invalidate(0, checkout = res);
+    		});
+    	}
+
+    	function handleCartClose() {
+    		$$invalidate(1, showCart = false);
+    	}
+
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console_1.warn(`<Shop> was created with unknown prop '${key}'`);
+    	});
+
+    	const click_handler = () => $$invalidate(1, showCart = true);
+
+    	$$self.$capture_state = () => ({
+    		onMount,
+    		client,
+    		Products,
+    		Cart,
+    		Debug,
+    		encodeShopifyId,
+    		collectionId,
+    		showCart,
+    		checkout,
+    		products,
+    		shop,
+    		productsPerPage,
+    		addVariantToCart,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		handleCartClose,
+    		loadMore,
+    		itemsInCart,
+    		totalInCart
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("showCart" in $$props) $$invalidate(1, showCart = $$props.showCart);
+    		if ("checkout" in $$props) $$invalidate(0, checkout = $$props.checkout);
+    		if ("products" in $$props) $$invalidate(2, products = $$props.products);
+    		if ("shop" in $$props) $$invalidate(3, shop = $$props.shop);
+    		if ("itemsInCart" in $$props) $$invalidate(4, itemsInCart = $$props.itemsInCart);
+    		if ("totalInCart" in $$props) $$invalidate(5, totalInCart = $$props.totalInCart);
+    	};
+
+    	let itemsInCart;
+    	let totalInCart;
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*checkout*/ 1) {
+    			 $$invalidate(4, itemsInCart = checkout.lineItems.length);
+    		}
+
+    		if ($$self.$$.dirty & /*checkout*/ 1) {
+    			 $$invalidate(5, totalInCart = checkout.paymentDue);
+    		}
+    	};
+
+    	return [
+    		checkout,
+    		showCart,
+    		products,
+    		shop,
+    		itemsInCart,
+    		totalInCart,
+    		addVariantToCart,
+    		updateQuantityInCart,
+    		removeLineItemInCart,
+    		handleCartClose,
+    		click_handler
+    	];
+    }
+
+    class Shop$1 extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$7, create_fragment$7, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Shop",
+    			options,
+    			id: create_fragment$7.name
+    		});
+    	}
+    }
+
+    /* src/App.svelte generated by Svelte v3.31.0 */
+
+    function create_fragment$8(ctx) {
+    	let shop;
+    	let current;
+    	shop = new Shop$1({ $$inline: true });
+
+    	const block = {
+    		c: function create() {
+    			create_component(shop.$$.fragment);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(shop, target, anchor);
+    			current = true;
+    		},
+    		p: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(shop.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(shop.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(shop, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$8.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$8($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("App", slots, []);
     	const writable_props = [];
@@ -11279,26 +13822,26 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({ client, Products, Debug });
+    	$$self.$capture_state = () => ({ Shop: Shop$1 });
     	return [];
     }
 
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, {});
+    		init(this, options, instance$8, create_fragment$8, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "App",
     			options,
-    			id: create_fragment$3.name
+    			id: create_fragment$8.name
     		});
     	}
     }
 
     const app = new App({
-    	target: document.body
+    	target: document.body,
     });
 
     return app;

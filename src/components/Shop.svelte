@@ -10,8 +10,7 @@
 		return btoa(`gid://shopify/${type}/${id}`);
 	}
 
-	const collectionId = '234610983111';
-	// const collectionId = false;
+	const collectionId = false;
 
 	let showCart = false;
 	let checkout = { lineItems: [] };
