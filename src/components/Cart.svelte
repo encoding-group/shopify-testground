@@ -1,15 +1,21 @@
 <script>
 
-    import Item from './CartItem.svelte';
+    import CartItem from './CartItem.svelte';
     import Debug from './Debug.svelte';
 
     export let shop;
     export let checkout;
     export let isCartVisible;
 
+    let currency = checkout.currencyCode;
+
     function handleHideCart(){
 		shop.hideCart();
 	}
+
+    function handleCheckout(){
+        shop.redirectToCheckout
+    }
 
 </script>
 
@@ -33,26 +39,24 @@
 
                 <ul>
                     {#each checkout.lineItems as item}
-                        <Item {item} {shop}
-                            key={item.id.toString()}
-                        />
+                        <CartItem {item} {shop} />
                     {/each}
                 </ul>
 
                 <footer>
                     <dl class="subtotal">
                         <dt>Subtotal</dt>
-                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                        <dd>{currency} {checkout.subtotalPrice}</dd>
                     </dl>
                     <dl class="taxes">
                         <dt>Taxes</dt>
-                        <dd>{checkout.currencyCode} {checkout.totalTax}</dd>
+                        <dd>{currency} {checkout.totalTax}</dd>
                     </dl>
                     <dl class="subtotal">
                         <dt>Total</dt>
-                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
+                        <dd>{currency} {checkout.subtotalPrice}</dd>
                     </dl>
-                    <button class="checkout" on:click={shop.redirectToCheckout}>Checkout</button>
+                    <button class="checkout" on:click={handleCheckout}>Checkout</button>
                 </footer>
 
             {/if}

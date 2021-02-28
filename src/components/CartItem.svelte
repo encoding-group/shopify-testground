@@ -4,11 +4,18 @@
     import Debug from './Debug.svelte';
 
     export let item;
-    export let updateQuantityInCart;
-    export let removeLineItemInCart;
-    export let key;
+    export let shop;
+
+    let key = item.id.toString();
 
     $: price = (item.quantity * item.variant.price).toFixed(2);
+
+    function handleUpdateQuantity( event ) {
+        shop.updateQuantityInCart( item.id, event.detail );
+    }
+    function handleRemoveItem() {
+        shop.removeLineItemInCart( item.id );
+    }
 
 </script>
 
@@ -31,14 +38,14 @@
 
         <div class="options">
 
-            <QuantitySelector value={item.quantity} on:change={(event) => updateQuantityInCart(item.id, event.detail)} />
+            <QuantitySelector value={item.quantity} on:change={handleUpdateQuantity} />
 
             <div class="price">
                 <span>{item.variant.priceV2.currencyCode} {price}</span>
             </div>
 
             <div>
-                <button class="remove" title="Remove {item.title} from cart" on:click={()=> removeLineItemInCart(item.id)}>×</button>
+                <button class="remove" title="Remove {item.title} from cart" on:click={handleRemoveItem}>×</button>
             </div>
 
         </div>
