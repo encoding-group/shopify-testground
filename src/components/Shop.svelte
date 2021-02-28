@@ -14,7 +14,7 @@
 		onUpdateCart: ( ref ) => {
 			itemsInCart = ref.itemsInCart;
 			totalInCart = ref.totalInCart;
-			checkout = shop.checkout;
+			checkout = ref.checkout;
 		},
 		onToggleCart: ( isVisible ) => {
 			isCartVisible = isVisible;

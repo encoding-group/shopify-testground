@@ -4,53 +4,45 @@
     import QuantitySelector from './QuantitySelector.svelte';
     import Debug from './Debug.svelte';
 
-    export let product;
+    import { Product } from './product.js';
+
     export let shop;
+    export let item;
 
-    let key = product.id.toString();
+    const callbacks = {
+        onSelectionUpdate: ( s ) => {
+            selection = s;
+        }
+    };
 
-    let defaultOptionValues = {};
-    product.options.forEach((selector) => {
-        defaultOptionValues[selector.name] = selector.values[0].value;
-    });
+    let product = new Product( item, callbacks );
 
-    let selection = { selectedOptions: defaultOptionValues };
-
-    function findImage(images, variantId) {
-        console.log(`Product.findImage(${images},${variantId})`);
-        const primary = images[0];
-
-        const image = images.filter((image) => {
-            return image.variant_ids.includes(variantId);
-        })[0];
-
-        return (image || primary).src;
-    }
+    let quantity = 1;
+    let selection = product.selection;
 
     function handleOptionChange(event) {
-        console.log(`Product.handleOptionChange(${event})`);
         const target = event.target;
-        let selectedOptions = selection.selectedOptions;
+        console.log(`Product.handleOptionChange(${target.name} = ${target.value})`);
+        let selectedOptions = product.selection.options;
         selectedOptions[target.name] = target.value;
 
-        const selectedVariant = shop.client.product.helpers.variantForOptions(product, selectedOptions);
+        const selectedVariant = shop.client.product.helpers.variantForOptions(product.product, selectedOptions);
 
-        selection.selectedVariant = selectedVariant;
-        selection.selectedVariantImage = selectedVariant.attrs.image;
+        product.selection = {
+            options: selectedOptions,
+            variant: selectedVariant,
+            image: selectedVariant.attrs.image,
+        };
     }
 
     function handleQuantityChange(event) {
-        console.log(`Product.handleQuantityChange(${event})`);
-        selection.selectedVariantQuantity = event.detail;
+        quantity = event.detail;
+        console.log(`Product.handleQuantityChange(${quantity})`);
     }
-
-    $: variantImage = selection.selectedVariantImage || product.images[0];
-    $: variant = selection.selectedVariant || product.variants[0];
-    $: variantQuantity = selection.selectedVariantQuantity || 1;
 
     function handleAddVariantToCart(){
         shop.showCart();
-        shop.addVariantToCart(variant.id, variantQuantity);
+        shop.addVariantToCart(selection.variant.id, quantity);
     }
 
 </script>
@@ -74,25 +66,25 @@
         <dl>
 
             <dt>Type</dt>
-            <dd>{product.productType}</dd>
+            <dd>{product.type}</dd>
 
-            <dt>Vendor</dt>
-            <dd>{product.vendor}</dd>
+            <dt>Brand</dt>
+            <dd>{product.brand}</dd>
 
             <dt>Description</dt>
             <dd>{@html product.description}</dd>
 
-            <dt>Handle</dt>
-            <dd>{product.handle}</dd>
+            <dt>Slug</dt>
+            <dd>{product.slug}</dd>
 
             <dt>ID</dt>
-            <dd>{atob(product.id)}</dd>
+            <dd>{product.id}</dd>
 
         </dl>
 
         <div class="buy">
 
-            <span class="price">{variant.priceV2.currencyCode} {variant.price}</span>
+            <span class="price">{product.currency} {selection.variant.price}</span>
 
             {#if product.options.length > 1}
                 {#each product.options as option}
@@ -104,9 +96,9 @@
                 {/each}
             {/if}
 
-            <QuantitySelector value={variantQuantity} on:change={handleQuantityChange} />
+            <QuantitySelector value={quantity} on:change={handleQuantityChange} />
 
-            <button class="buy" on:click={handleAddVariantToCart} >Add to Cart</button>
+            <button class="buy" on:click={handleAddVariantToCart}>Add to Cart</button>
 
         </div>
 

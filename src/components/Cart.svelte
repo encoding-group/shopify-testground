@@ -14,7 +14,7 @@
 	}
 
     function handleCheckout(){
-        shop.redirectToCheckout
+        shop.redirectToCheckout();
     }
 
 </script>

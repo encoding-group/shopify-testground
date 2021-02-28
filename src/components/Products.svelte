@@ -25,9 +25,9 @@
 {:then products}
 
     <ul>
-        {#each products as product}
+        {#each products as item}
             <li>
-                <Product {product} {shop} />
+                <Product {item} {shop} />
             </li>
         {/each}
     </ul>
