@@ -10360,7 +10360,7 @@ var app = (function () {
 
     var shopifyBuy = Client;
 
-    class Shopify {
+    class Shop$1 {
 
         constructor( credentials, callbacks ){
 
@@ -10372,6 +10372,7 @@ var app = (function () {
             this._isCartVisible = false;
 
             this.fetchCheckout();
+
         }
 
         /* client */
@@ -10387,9 +10388,9 @@ var app = (function () {
         }
 
         async fetchShopInfo(){
-            console.log('Shopify.fetchShopInfo()');
+            console.log('Shop.fetchShopInfo()');
             try {
-                this._shop = await this._client.shop.fetchInfo();
+                this._shop = await this.client.shop.fetchInfo();
                 return this._shop;
             } catch (error) {
                 console.error( error );
@@ -10418,9 +10419,9 @@ var app = (function () {
         }
 
         async fetchCheckout(){
-            console.log('Shopify.fetchCheckout()');
+            console.log('Shop.fetchCheckout()');
             try {
-                this.checkout = await this._client.checkout.create();
+                this.checkout = await this.client.checkout.create();
                 return this.checkout;
             } catch (error) {
                 console.error( error );
@@ -10430,7 +10431,7 @@ var app = (function () {
         }
 
         async addVariantToCart( variantId, quantity ){
-            console.log(`Shopify.addVariantToCart(${atob(variantId)},${quantity})`);
+            console.log(`Shop.addVariantToCart(${atob(variantId)},${quantity})`);
 
     		const lineItemsToAdd = [{
                 variantId,
@@ -10438,7 +10439,7 @@ var app = (function () {
             }];
 
             try {
-                this.checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
+                this.checkout = await this.client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
                 return this.checkout;
             } catch (error) {
                 console.error( error );
@@ -10448,14 +10449,14 @@ var app = (function () {
     	}
 
         async updateQuantityInCart( lineItemId, quantity ){
-            console.log(`Shopify.updateQuantityInCart(${atob(lineItemId)},${quantity})`);
+            console.log(`Shop.updateQuantityInCart(${atob(lineItemId)},${quantity})`);
     		const lineItemsToUpdate = [{
                 id: lineItemId,
                 quantity: parseInt(quantity, 10)
             }];
 
             try {
-                this.checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
+                this.checkout = await this.client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
                 return this.checkout;
             } catch (error) {
                 console.error( error );
@@ -10465,9 +10466,9 @@ var app = (function () {
     	}
 
         async removeLineItemInCart( lineItemId ){
-            console.log(`Shopify.removeLineItemInCart(${atob(lineItemId)})`);
+            console.log(`Shop.removeLineItemInCart(${atob(lineItemId)})`);
             try {
-                this.checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
+                this.checkout = await this.client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
                 return this.checkout;
             } catch (error) {
                 console.error( error );
@@ -10477,7 +10478,7 @@ var app = (function () {
     	}
 
         redirectToCheckout(){
-            console.log('Shopify.redirectToCheckout');
+            console.log('Shop.redirectToCheckout');
             window.open( this._checkout.webUrl );
         }
 
@@ -10497,12 +10498,12 @@ var app = (function () {
         }
 
         showCart(){
-            console.log('Shopify.showCart');
+            console.log('Shop.showCart');
             this.isCartVisible = true;
         }
 
         hideCart(){
-            console.log('Shopify.hideCart');
+            console.log('Shop.hideCart');
             this.isCartVisible = false;
         }
 
@@ -10520,34 +10521,65 @@ var app = (function () {
             return btoa(`gid://shopify/${type}/${id}`);
         }
 
-        fetchCollection( id ){
-            console.log(`Shopify.fetchCollection(${id})`);
-            /*
-            * help required, this doesn’t work
-            */
-            let collection = this.encodeId( id );
-            try {
-                return this._client.collection.fetchWithProducts( collection, {productsFirst: this.itemsPerRow} );
-            } catch (error) {
-                console.error( error );
-                return [];
-            }
+        findVariantForOptions( product, selectedOptions ){
+            return this.client.product.helpers.variantForOptions(product, selectedOptions);
         }
 
-        fetchProducts( ids = [] ){
-            console.log(`Shopify.fetchProducts(${ids})`);
-            // if( ids.length > 0 ){
-            //     get list of products by specified ids
-            // } else {
-            //     get all products
-            // }
+        async fetchProducts( ids = [] ){
+            console.log(`Shop.fetchProducts(${ids})`);
+            ids = ids.map( id => this.encodeId( id, 'Product' ) );
+            return await this.client.product.fetchMultiple( ids )
+                .then((products) => {
+                    return products;
+                })
+                .catch((error) => {
+                    console.error( error );
+                    return [];
+                });
+        }
 
-            try {
-                return this._client.product.fetchAll( this.itemsPerRow );
-            } catch (error) {
-                console.error( error );
-                return [];
-            }
+        async fetchAllProducts(){
+            console.log(`Shop.fetchAllProducts()`);
+            return await this.client.product.fetchAll( this.itemsPerRow )
+                .then((products) => {
+                    return products;
+                })
+                .catch((error) => {
+                    console.error( error );
+                    return [];
+                });
+        }
+
+        async fetchCollection( id ){
+            console.log(`Shop.fetchCollection(${id})`);
+            return await this.client.collection.fetchWithProducts( this.encodeId( id ), {productsFirst: this.itemsPerRow} )
+                .then((collection) => {
+                    return collection.products;
+                })
+                .catch((error) => {
+                    console.error( error );
+                    return [];
+                });
+        }
+
+        /* collections */
+
+        async fetchCollections(){
+            console.log(`Shop.fetchCollections()`);
+            return await this.client.collection.fetchAllWithProducts()
+                .then((col) => {
+                    let collections = [];
+                    for (const collection of col) {
+                        if( collection.products.length > 0 ){
+                            collections.push( collection );
+                        }
+                    }
+                    return collections;
+                })
+                .catch((error) => {
+                    console.error( error );
+                    return [];
+                });
         }
 
     }
@@ -11138,7 +11170,7 @@ var app = (function () {
     			option_1.__value = option_1_value_value = /*value*/ ctx[3];
     			option_1.value = option_1.__value;
     			attr_dev(option_1, "key", option_1_key_value = `${/*option*/ ctx[0].name}-${/*value*/ ctx[3]}`);
-    			add_location(option_1, file$2, 11, 8, 222);
+    			add_location(option_1, file$2, 11, 8, 228);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option_1, anchor);
@@ -11196,7 +11228,7 @@ var app = (function () {
 
     			attr_dev(select, "name", select_name_value = /*option*/ ctx[0].name);
     			attr_dev(select, "key", select_key_value = /*option*/ ctx[0].name);
-    			add_location(select, file$2, 8, 0, 100);
+    			add_location(select, file$2, 8, 0, 103);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11213,7 +11245,7 @@ var app = (function () {
     					select,
     					"change",
     					function () {
-    						if (is_function(/*handleOptionChange*/ ctx[1])) /*handleOptionChange*/ ctx[1].apply(this, arguments);
+    						if (is_function(/*handleUpdateSelection*/ ctx[1])) /*handleUpdateSelection*/ ctx[1].apply(this, arguments);
     					},
     					false,
     					false,
@@ -11283,9 +11315,9 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("VariantSelector", slots, []);
     	let { option } = $$props;
-    	let { handleOptionChange } = $$props;
+    	let { handleUpdateSelection } = $$props;
     	let { key } = $$props;
-    	const writable_props = ["option", "handleOptionChange", "key"];
+    	const writable_props = ["option", "handleUpdateSelection", "key"];
 
     	Object.keys($$props).forEach(key => {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<VariantSelector> was created with unknown prop '${key}'`);
@@ -11293,15 +11325,15 @@ var app = (function () {
 
     	$$self.$$set = $$props => {
     		if ("option" in $$props) $$invalidate(0, option = $$props.option);
-    		if ("handleOptionChange" in $$props) $$invalidate(1, handleOptionChange = $$props.handleOptionChange);
+    		if ("handleUpdateSelection" in $$props) $$invalidate(1, handleUpdateSelection = $$props.handleUpdateSelection);
     		if ("key" in $$props) $$invalidate(2, key = $$props.key);
     	};
 
-    	$$self.$capture_state = () => ({ option, handleOptionChange, key });
+    	$$self.$capture_state = () => ({ option, handleUpdateSelection, key });
 
     	$$self.$inject_state = $$props => {
     		if ("option" in $$props) $$invalidate(0, option = $$props.option);
-    		if ("handleOptionChange" in $$props) $$invalidate(1, handleOptionChange = $$props.handleOptionChange);
+    		if ("handleUpdateSelection" in $$props) $$invalidate(1, handleUpdateSelection = $$props.handleUpdateSelection);
     		if ("key" in $$props) $$invalidate(2, key = $$props.key);
     	};
 
@@ -11309,13 +11341,18 @@ var app = (function () {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [option, handleOptionChange, key];
+    	return [option, handleUpdateSelection, key];
     }
 
     class VariantSelector extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, { option: 0, handleOptionChange: 1, key: 2 });
+
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {
+    			option: 0,
+    			handleUpdateSelection: 1,
+    			key: 2
+    		});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -11331,8 +11368,8 @@ var app = (function () {
     			console.warn("<VariantSelector> was created without expected prop 'option'");
     		}
 
-    		if (/*handleOptionChange*/ ctx[1] === undefined && !("handleOptionChange" in props)) {
-    			console.warn("<VariantSelector> was created without expected prop 'handleOptionChange'");
+    		if (/*handleUpdateSelection*/ ctx[1] === undefined && !("handleUpdateSelection" in props)) {
+    			console.warn("<VariantSelector> was created without expected prop 'handleUpdateSelection'");
     		}
 
     		if (/*key*/ ctx[2] === undefined && !("key" in props)) {
@@ -11348,11 +11385,11 @@ var app = (function () {
     		throw new Error("<VariantSelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	get handleOptionChange() {
+    	get handleUpdateSelection() {
     		throw new Error("<VariantSelector>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set handleOptionChange(value) {
+    	set handleUpdateSelection(value) {
     		throw new Error("<VariantSelector>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
@@ -11463,7 +11500,7 @@ var app = (function () {
     				dispose = [
     					listen_dev(button0, "click", /*decrement*/ ctx[1], false, false, false),
     					listen_dev(input, "input", /*input_input_handler*/ ctx[6]),
-    					listen_dev(input, "change", /*handleChange*/ ctx[3], false, false, false),
+    					listen_dev(input, "change", /*handleUpdate*/ ctx[3], false, false, false),
     					listen_dev(button1, "click", /*increment*/ ctx[2], false, false, false)
     				];
 
@@ -11518,7 +11555,7 @@ var app = (function () {
     	function decrement() {
     		if (value > 1) {
     			$$invalidate(0, value--, value);
-    			dispatcher("change", value);
+    			dispatcher("update", value);
     		} else {
     			$$invalidate(0, value = 1);
     		}
@@ -11526,11 +11563,11 @@ var app = (function () {
 
     	function increment() {
     		$$invalidate(0, value++, value);
-    		dispatcher("change", value);
+    		dispatcher("update", value);
     	}
 
-    	function handleChange() {
-    		dispatcher("change", value);
+    	function handleUpdate() {
+    		dispatcher("update", value);
     	}
 
     	const writable_props = ["value"];
@@ -11555,7 +11592,7 @@ var app = (function () {
     		value,
     		decrement,
     		increment,
-    		handleChange
+    		handleUpdate
     	});
 
     	$$self.$inject_state = $$props => {
@@ -11566,7 +11603,7 @@ var app = (function () {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [value, decrement, increment, handleChange, $$scope, slots, input_input_handler];
+    	return [value, decrement, increment, handleUpdate, $$scope, slots, input_input_handler];
     }
 
     class QuantitySelector extends SvelteComponentDev {
@@ -11601,8 +11638,7 @@ var app = (function () {
             this._selection = {
                 options: this.defaultOptionValues,
                 variant: this.variant,
-                image: this.variant.image,
-                quantity: 1
+                image: this.variant.image
             };
 
         }
@@ -11700,9 +11736,6 @@ var app = (function () {
             if( selection.hasOwnProperty('variant') ){
                 this._selection.variant = selection.variant;
             }
-            if( selection.hasOwnProperty('quantity') ){
-                this._selection.quantity = selection.quantity;
-            }
             if( selection.hasOwnProperty('image') ){
                 this._selection.image = selection.image;
             }
@@ -11733,7 +11766,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (53:4) {#if product.images.length}
+    // (54:4) {#if product.images.length}
     function create_if_block_1(ctx) {
     	let div;
     	let each_value_1 = /*product*/ ctx[0].images;
@@ -11753,7 +11786,7 @@ var app = (function () {
     			}
 
     			attr_dev(div, "class", "gallery svelte-1xyrc36");
-    			add_location(div, file$4, 53, 8, 1467);
+    			add_location(div, file$4, 54, 8, 1488);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -11797,14 +11830,14 @@ var app = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(53:4) {#if product.images.length}",
+    		source: "(54:4) {#if product.images.length}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (55:12) {#each product.images as image}
+    // (56:12) {#each product.images as image}
     function create_each_block_1(ctx) {
     	let figure;
     	let img;
@@ -11819,8 +11852,8 @@ var app = (function () {
     			t = space();
     			if (img.src !== (img_src_value = /*image*/ ctx[12].src)) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", img_alt_value = `${/*product*/ ctx[0].title} product shot`);
-    			add_location(img, file$4, 56, 20, 1578);
-    			add_location(figure, file$4, 55, 16, 1549);
+    			add_location(img, file$4, 57, 20, 1599);
+    			add_location(figure, file$4, 56, 16, 1570);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, figure, anchor);
@@ -11845,14 +11878,14 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(55:12) {#each product.images as image}",
+    		source: "(56:12) {#each product.images as image}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (93:12) {#if product.options.length > 1}
+    // (94:12) {#if product.options.length > 1}
     function create_if_block$2(ctx) {
     	let each_1_anchor;
     	let current;
@@ -11885,7 +11918,7 @@ var app = (function () {
     			current = true;
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*handleOptionChange, product*/ 9) {
+    			if (dirty & /*handleUpdateSelection, product*/ 9) {
     				each_value = /*product*/ ctx[0].options;
     				validate_each_argument(each_value);
     				let i;
@@ -11941,21 +11974,21 @@ var app = (function () {
     		block,
     		id: create_if_block$2.name,
     		type: "if",
-    		source: "(93:12) {#if product.options.length > 1}",
+    		source: "(94:12) {#if product.options.length > 1}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (94:16) {#each product.options as option}
+    // (95:16) {#each product.options as option}
     function create_each_block$1(ctx) {
     	let variantselector;
     	let current;
 
     	variantselector = new VariantSelector({
     			props: {
-    				handleOptionChange: /*handleOptionChange*/ ctx[3],
+    				handleUpdateSelection: /*handleUpdateSelection*/ ctx[3],
     				option: /*option*/ ctx[9],
     				key: /*option*/ ctx[9].id.toString()
     			},
@@ -11994,14 +12027,14 @@ var app = (function () {
     		block,
     		id: create_each_block$1.name,
     		type: "each",
-    		source: "(94:16) {#each product.options as option}",
+    		source: "(95:16) {#each product.options as option}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (112:8) <Debug data={product}>
+    // (113:8) <Debug data={product}>
     function create_default_slot$1(ctx) {
     	let t;
 
@@ -12021,7 +12054,7 @@ var app = (function () {
     		block,
     		id: create_default_slot$1.name,
     		type: "slot",
-    		source: "(112:8) <Debug data={product}>",
+    		source: "(113:8) <Debug data={product}>",
     		ctx
     	});
 
@@ -12087,7 +12120,7 @@ var app = (function () {
     			$$inline: true
     		});
 
-    	quantityselector.$on("change", /*handleQuantityChange*/ ctx[4]);
+    	quantityselector.$on("update", /*handleUpdateQuantity*/ ctx[4]);
 
     	debug_1 = new Debug({
     			props: {
@@ -12147,42 +12180,42 @@ var app = (function () {
     			div3 = element("div");
     			create_component(debug_1.$$.fragment);
     			attr_dev(h1, "class", "svelte-1xyrc36");
-    			add_location(h1, file$4, 64, 8, 1746);
-    			add_location(dt0, file$4, 67, 12, 1797);
+    			add_location(h1, file$4, 65, 8, 1767);
+    			add_location(dt0, file$4, 68, 12, 1818);
     			attr_dev(dd0, "class", "svelte-1xyrc36");
-    			add_location(dd0, file$4, 68, 12, 1823);
-    			add_location(dt1, file$4, 70, 12, 1860);
+    			add_location(dd0, file$4, 69, 12, 1844);
+    			add_location(dt1, file$4, 71, 12, 1881);
     			attr_dev(dd1, "class", "svelte-1xyrc36");
-    			add_location(dd1, file$4, 71, 12, 1887);
-    			add_location(dt2, file$4, 73, 12, 1925);
+    			add_location(dd1, file$4, 72, 12, 1908);
+    			add_location(dt2, file$4, 74, 12, 1946);
     			attr_dev(dd2, "class", "svelte-1xyrc36");
-    			add_location(dd2, file$4, 74, 12, 1958);
-    			add_location(dt3, file$4, 76, 12, 2008);
+    			add_location(dd2, file$4, 75, 12, 1979);
+    			add_location(dt3, file$4, 77, 12, 2029);
     			attr_dev(dd3, "class", "svelte-1xyrc36");
-    			add_location(dd3, file$4, 77, 12, 2034);
-    			add_location(dt4, file$4, 79, 12, 2071);
+    			add_location(dd3, file$4, 78, 12, 2055);
+    			add_location(dt4, file$4, 80, 12, 2092);
     			attr_dev(dd4, "class", "svelte-1xyrc36");
-    			add_location(dd4, file$4, 80, 12, 2095);
+    			add_location(dd4, file$4, 81, 12, 2116);
     			attr_dev(dl, "class", "svelte-1xyrc36");
-    			add_location(dl, file$4, 66, 8, 1780);
+    			add_location(dl, file$4, 67, 8, 1801);
     			if (img.src !== (img_src_value = /*selection*/ ctx[2].image.src)) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "Product");
     			attr_dev(img, "class", "svelte-1xyrc36");
-    			add_location(img, file$4, 85, 12, 2177);
+    			add_location(img, file$4, 86, 12, 2198);
     			attr_dev(div0, "class", "selection svelte-1xyrc36");
-    			add_location(div0, file$4, 84, 8, 2141);
+    			add_location(div0, file$4, 85, 8, 2162);
     			attr_dev(span, "class", "price");
-    			add_location(span, file$4, 90, 12, 2282);
+    			add_location(span, file$4, 91, 12, 2303);
     			attr_dev(button, "class", "buy svelte-1xyrc36");
-    			add_location(button, file$4, 104, 12, 2778);
+    			add_location(button, file$4, 105, 12, 2802);
     			attr_dev(div1, "class", "buy svelte-1xyrc36");
-    			add_location(div1, file$4, 88, 8, 2251);
+    			add_location(div1, file$4, 89, 8, 2272);
     			attr_dev(div2, "class", "details svelte-1xyrc36");
-    			add_location(div2, file$4, 62, 4, 1715);
+    			add_location(div2, file$4, 63, 4, 1736);
     			attr_dev(div3, "class", "full svelte-1xyrc36");
-    			add_location(div3, file$4, 110, 4, 2886);
+    			add_location(div3, file$4, 111, 4, 2910);
     			attr_dev(article, "class", "svelte-1xyrc36");
-    			add_location(article, file$4, 50, 0, 1416);
+    			add_location(article, file$4, 51, 0, 1437);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -12350,27 +12383,28 @@ var app = (function () {
     	let quantity = 1;
     	let selection = product.selection;
 
-    	function handleOptionChange(event) {
+    	function handleUpdateSelection(event) {
     		const target = event.target;
-    		console.log(`Product.handleOptionChange(${target.name} = ${target.value})`);
+    		console.log(`Product.handleUpdateSelection(${target.name} = ${target.value})`);
     		let selectedOptions = product.selection.options;
     		selectedOptions[target.name] = target.value;
-    		const selectedVariant = shop.client.product.helpers.variantForOptions(product.product, selectedOptions);
+    		const selectedVariant = shop.findVariantForOptions(product.product, selectedOptions);
+    		console.log(selectedVariant);
 
     		$$invalidate(
     			0,
     			product.selection = {
     				options: selectedOptions,
     				variant: selectedVariant,
-    				image: selectedVariant.attrs.image
+    				image: selectedVariant.image
     			},
     			product
     		);
     	}
 
-    	function handleQuantityChange(event) {
+    	function handleUpdateQuantity(event) {
     		$$invalidate(1, quantity = event.detail);
-    		console.log(`Product.handleQuantityChange(${quantity})`);
+    		console.log(`Product.handleUpdateQuantity(${quantity})`);
     	}
 
     	function handleAddVariantToCart() {
@@ -12400,8 +12434,8 @@ var app = (function () {
     		product,
     		quantity,
     		selection,
-    		handleOptionChange,
-    		handleQuantityChange,
+    		handleUpdateSelection,
+    		handleUpdateQuantity,
     		handleAddVariantToCart
     	});
 
@@ -12421,8 +12455,8 @@ var app = (function () {
     		product,
     		quantity,
     		selection,
-    		handleOptionChange,
-    		handleQuantityChange,
+    		handleUpdateSelection,
+    		handleUpdateQuantity,
     		handleAddVariantToCart,
     		shop,
     		item
@@ -12479,7 +12513,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (39:0) {:catch error}
+    // (36:0) {:catch error}
     function create_catch_block$1(ctx) {
     	let t_value = /*error*/ ctx[6] + "";
     	let t;
@@ -12503,27 +12537,27 @@ var app = (function () {
     		block,
     		id: create_catch_block$1.name,
     		type: "catch",
-    		source: "(39:0) {:catch error}",
+    		source: "(36:0) {:catch error}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (25:0) {:then products}
+    // (22:0) {:then data}
     function create_then_block$1(ctx) {
     	let ul;
     	let t0;
     	let p;
     	let t1;
-    	let t2_value = /*products*/ ctx[2].length + "";
+    	let t2_value = /*data*/ ctx[2].length + "";
     	let t2;
     	let t3;
     	let button;
     	let current;
     	let mounted;
     	let dispose;
-    	let each_value = /*products*/ ctx[2];
+    	let each_value = /*data*/ ctx[2];
     	validate_each_argument(each_value);
     	let each_blocks = [];
 
@@ -12550,9 +12584,9 @@ var app = (function () {
     			t3 = space();
     			button = element("button");
     			button.textContent = "Load more";
-    			add_location(ul, file$5, 26, 4, 557);
-    			add_location(p, file$5, 34, 4, 703);
-    			add_location(button, file$5, 36, 4, 741);
+    			add_location(ul, file$5, 23, 4, 529);
+    			add_location(p, file$5, 31, 4, 671);
+    			add_location(button, file$5, 33, 4, 705);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, ul, anchor);
@@ -12575,8 +12609,8 @@ var app = (function () {
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*loadProducts, shop*/ 3) {
-    				each_value = /*products*/ ctx[2];
+    			if (dirty & /*load, shop*/ 3) {
+    				each_value = /*data*/ ctx[2];
     				validate_each_argument(each_value);
     				let i;
 
@@ -12637,14 +12671,14 @@ var app = (function () {
     		block,
     		id: create_then_block$1.name,
     		type: "then",
-    		source: "(25:0) {:then products}",
+    		source: "(22:0) {:then data}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (28:8) {#each products as item}
+    // (25:8) {#each data as item}
     function create_each_block$2(ctx) {
     	let li;
     	let product;
@@ -12664,7 +12698,7 @@ var app = (function () {
     			li = element("li");
     			create_component(product.$$.fragment);
     			t = space();
-    			add_location(li, file$5, 28, 12, 607);
+    			add_location(li, file$5, 25, 12, 575);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, li, anchor);
@@ -12696,14 +12730,14 @@ var app = (function () {
     		block,
     		id: create_each_block$2.name,
     		type: "each",
-    		source: "(28:8) {#each products as item}",
+    		source: "(25:8) {#each data as item}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (23:21)      Loading products {:then products}
+    // (20:13)      Loading products {:then data}
     function create_pending_block$1(ctx) {
     	let t;
 
@@ -12726,7 +12760,7 @@ var app = (function () {
     		block,
     		id: create_pending_block$1.name,
     		type: "pending",
-    		source: "(23:21)      Loading products {:then products}",
+    		source: "(20:13)      Loading products {:then data}",
     		ctx
     	});
 
@@ -12751,7 +12785,7 @@ var app = (function () {
     		blocks: [,,,]
     	};
 
-    	handle_promise(promise = /*loadProducts*/ ctx[1], info);
+    	handle_promise(promise = /*load*/ ctx[1], info);
 
     	const block = {
     		c: function create() {
@@ -12820,7 +12854,10 @@ var app = (function () {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Products", slots, []);
     	let { shop } = $$props;
-    	let loadProducts = shop.fetchProducts();
+
+    	// let load = shop.fetchAllProducts();
+    	let load = shop.fetchProducts(["9895318531", "9895313027"]);
+
     	const writable_props = ["shop"];
 
     	Object.keys($$props).forEach(key => {
@@ -12831,24 +12868,18 @@ var app = (function () {
     		if ("shop" in $$props) $$invalidate(0, shop = $$props.shop);
     	};
 
-    	$$self.$capture_state = () => ({
-    		Product: Product_1,
-    		Debug,
-    		shop,
-    		loadProducts,
-    		loadMore
-    	});
+    	$$self.$capture_state = () => ({ Product: Product_1, Debug, shop, load, loadMore });
 
     	$$self.$inject_state = $$props => {
     		if ("shop" in $$props) $$invalidate(0, shop = $$props.shop);
-    		if ("loadProducts" in $$props) $$invalidate(1, loadProducts = $$props.loadProducts);
+    		if ("load" in $$props) $$invalidate(1, load = $$props.load);
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [shop, loadProducts];
+    	return [shop, load];
     }
 
     class Products extends SvelteComponentDev {
@@ -13029,7 +13060,7 @@ var app = (function () {
     			$$inline: true
     		});
 
-    	quantityselector.$on("change", /*handleUpdateQuantity*/ ctx[2]);
+    	quantityselector.$on("update", /*handleUpdateQuantity*/ ctx[2]);
 
     	debug_1 = new Debug({
     			props: {
@@ -14057,13 +14088,13 @@ var app = (function () {
     			create_component(products.$$.fragment);
     			t10 = space();
     			create_component(cart.$$.fragment);
-    			add_location(button0, file$8, 42, 2, 857);
-    			add_location(button1, file$8, 43, 2, 912);
-    			add_location(span, file$8, 45, 2, 968);
+    			add_location(button0, file$8, 42, 2, 818);
+    			add_location(button1, file$8, 43, 2, 873);
+    			add_location(span, file$8, 45, 2, 929);
     			attr_dev(div, "class", "cart");
-    			add_location(div, file$8, 40, 1, 835);
+    			add_location(div, file$8, 40, 1, 796);
     			attr_dev(main, "class", "svelte-8x552s");
-    			add_location(main, file$8, 38, 0, 826);
+    			add_location(main, file$8, 38, 0, 787);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -14166,11 +14197,11 @@ var app = (function () {
     		}
     	};
 
-    	let shop = new Shopify(credentials, callbacks);
+    	let shop = new Shop$1(credentials, callbacks);
     	let checkout = shop.checkout;
-    	let isCartVisible = shop.isCartVisible;
-    	let itemsInCart = shop.itemsInCart;
-    	let totalInCart = shop.totalInCart;
+    	let isCartVisible = false;
+    	let itemsInCart = 0;
+    	let totalInCart = (0).toFixed(2);
 
     	function handleShowCart() {
     		shop.showCart();
@@ -14192,7 +14223,7 @@ var app = (function () {
 
     	$$self.$capture_state = () => ({
     		onMount,
-    		Shopify,
+    		Shop: Shop$1,
     		ShopInfo,
     		Products,
     		Cart,
@@ -14233,14 +14264,14 @@ var app = (function () {
     	];
     }
 
-    class Shop$1 extends SvelteComponentDev {
+    class Shop_1 extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
     		init(this, options, instance$8, create_fragment$8, safe_not_equal, { credentials: 7 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
-    			tagName: "Shop",
+    			tagName: "Shop_1",
     			options,
     			id: create_fragment$8.name
     		});
@@ -14268,7 +14299,7 @@ var app = (function () {
     	let shop;
     	let current;
 
-    	shop = new Shop$1({
+    	shop = new Shop_1({
     			props: { credentials: /*example*/ ctx[0] },
     			$$inline: true
     		});
@@ -14325,7 +14356,7 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<App> was created with unknown prop '${key}'`);
     	});
 
-    	$$self.$capture_state = () => ({ Shop: Shop$1, example });
+    	$$self.$capture_state = () => ({ Shop: Shop_1, example });
     	return [example];
     }
 
