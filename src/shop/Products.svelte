@@ -21,6 +21,8 @@
     Loading products
 {:then data}
 
+    {(console.log(data))}
+
     <ul>
         {#each data as item}
             <li>

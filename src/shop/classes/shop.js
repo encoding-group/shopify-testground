@@ -28,9 +28,9 @@ export class Shop {
     }
 
     async fetchShopInfo(){
-        console.log('Shopify.fetchShopInfo()');
+        console.log('Shop.fetchShopInfo()');
         try {
-            this._shop = await this._client.shop.fetchInfo();
+            this._shop = await this.client.shop.fetchInfo();
             return this._shop;
         } catch (error) {
             console.error( error );
@@ -59,9 +59,9 @@ export class Shop {
     }
 
     async fetchCheckout(){
-        console.log('Shopify.fetchCheckout()');
+        console.log('Shop.fetchCheckout()');
         try {
-            this.checkout = await this._client.checkout.create();
+            this.checkout = await this.client.checkout.create();
             return this.checkout;
         } catch (error) {
             console.error( error );
@@ -71,7 +71,7 @@ export class Shop {
     }
 
     async addVariantToCart( variantId, quantity ){
-        console.log(`Shopify.addVariantToCart(${atob(variantId)},${quantity})`);
+        console.log(`Shop.addVariantToCart(${atob(variantId)},${quantity})`);
 
 		const lineItemsToAdd = [{
             variantId,
@@ -79,7 +79,7 @@ export class Shop {
         }];
 
         try {
-            this.checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
+            this.checkout = await this.client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
             return this.checkout;
         } catch (error) {
             console.error( error );
@@ -89,14 +89,14 @@ export class Shop {
 	}
 
     async updateQuantityInCart( lineItemId, quantity ){
-        console.log(`Shopify.updateQuantityInCart(${atob(lineItemId)},${quantity})`);
+        console.log(`Shop.updateQuantityInCart(${atob(lineItemId)},${quantity})`);
 		const lineItemsToUpdate = [{
             id: lineItemId,
             quantity: parseInt(quantity, 10)
         }];
 
         try {
-            this.checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
+            this.checkout = await this.client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
             return this.checkout;
         } catch (error) {
             console.error( error );
@@ -106,9 +106,9 @@ export class Shop {
 	}
 
     async removeLineItemInCart( lineItemId ){
-        console.log(`Shopify.removeLineItemInCart(${atob(lineItemId)})`);
+        console.log(`Shop.removeLineItemInCart(${atob(lineItemId)})`);
         try {
-            this.checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
+            this.checkout = await this.client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
             return this.checkout;
         } catch (error) {
             console.error( error );
@@ -118,7 +118,7 @@ export class Shop {
 	}
 
     redirectToCheckout(){
-        console.log('Shopify.redirectToCheckout');
+        console.log('Shop.redirectToCheckout');
         window.open( this._checkout.webUrl );
     }
 
@@ -138,12 +138,12 @@ export class Shop {
     }
 
     showCart(){
-        console.log('Shopify.showCart');
+        console.log('Shop.showCart');
         this.isCartVisible = true;
     }
 
     hideCart(){
-        console.log('Shopify.hideCart');
+        console.log('Shop.hideCart');
         this.isCartVisible = false;
     }
 
@@ -166,7 +166,7 @@ export class Shop {
     }
 
     async fetchProducts( ids = [] ){
-        console.log(`Shopify.fetchProducts(${ids})`);
+        console.log(`Shop.fetchProducts(${ids})`);
         ids = ids.map( id => this.encodeId( id, 'Product' ) );
         return await this.client.product.fetchMultiple( ids )
             .then((products) => {
@@ -179,7 +179,7 @@ export class Shop {
     }
 
     async fetchAllProducts(){
-        console.log(`Shopify.fetchAllProducts()`);
+        console.log(`Shop.fetchAllProducts()`);
         return await this.client.product.fetchAll( this.itemsPerRow )
             .then((products) => {
                 return products;
@@ -191,7 +191,7 @@ export class Shop {
     }
 
     async fetchCollection( id ){
-        console.log(`Shopify.fetchCollection(${id})`);
+        console.log(`Shop.fetchCollection(${id})`);
         return await this.client.collection.fetchWithProducts( this.encodeId( id ), {productsFirst: this.itemsPerRow} )
             .then((collection) => {
                 return collection.products;
@@ -205,7 +205,7 @@ export class Shop {
     /* collections */
 
     async fetchCollections(){
-        console.log(`Shopify.fetchCollections()`);
+        console.log(`Shop.fetchCollections()`);
         return await this.client.collection.fetchAllWithProducts()
             .then((col) => {
                 let collections = [];
