@@ -8,7 +8,7 @@ export class Product {
         this._selection = {
             options: this.defaultOptionValues,
             variant: this.variant,
-            image: this.image,
+            image: this.variant.image,
             quantity: 1
         };
 
@@ -67,7 +67,7 @@ export class Product {
     }
 
     findImage( variantId ){
-        console.log(`Product.findImage(${images},${variantId})`);
+        console.log(`Product.findImage(${variantId})`);
 
         return this.images.filter((img) => {
             return img.variant_ids.includes( variantId );
@@ -107,11 +107,11 @@ export class Product {
         if( selection.hasOwnProperty('variant') ){
             this._selection.variant = selection.variant;
         }
-        if( selection.hasOwnProperty('image') ){
-            this._selection.image = selection.image;
-        }
         if( selection.hasOwnProperty('quantity') ){
             this._selection.quantity = selection.quantity;
+        }
+        if( selection.hasOwnProperty('image') ){
+            this._selection.image = selection.image;
         }
 
         this._callbacks.onSelectionUpdate( this.selection );

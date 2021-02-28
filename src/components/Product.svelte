@@ -12,6 +12,7 @@
     const callbacks = {
         onSelectionUpdate: ( s ) => {
             selection = s;
+            console.log( s.image.src );
         }
     };
 
@@ -64,7 +65,6 @@
         <h1>{product.title}</h1>
 
         <dl>
-
             <dt>Type</dt>
             <dd>{product.type}</dd>
 
@@ -81,6 +81,10 @@
             <dd>{product.id}</dd>
 
         </dl>
+
+        <div class="selection">
+            <img src="{selection.image.src}" alt="Product" />
+        </div>
 
         <div class="buy">
 
@@ -126,6 +130,12 @@
         }
         > .full {
             width: 100%;
+        }
+    }
+
+    .selection {
+        img {
+            width: 200px;
         }
     }
 
