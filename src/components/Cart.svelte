@@ -5,12 +5,12 @@
 
     export let shop;
     export let isCartVisible;
+    export let hideCart;
 
     let checkout = shop.checkout;
-    console.log( checkout );
 
     /*
-    * help required: cart must shop and update according to the inner workings of the shop class
+    * help required: cart must show and update according to the inner workings of the shop class
     */
 
     $: empty = shop.isCartEmpty;
@@ -22,7 +22,7 @@
         <div class="cart">
 
             <div class="close">
-                <button on:click={shop.hideCart}>×</button>
+                <button on:click={hideCart}>×</button>
             </div>
 
             <header>
@@ -36,7 +36,7 @@
             {:else}
 
                 <ul>
-                    {#each shop.checkout.lineItems as item}
+                    {#each checkout.lineItems as item}
                         <Item {item} {shop}
                             key={item.id.toString()}
                         />
@@ -46,22 +46,22 @@
                 <footer>
                     <dl class="subtotal">
                         <dt>Subtotal</dt>
-                        <dd>{shop.checkout.currencyCode} {shop.checkout.subtotalPrice}</dd>
+                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
                     </dl>
                     <dl class="taxes">
                         <dt>Taxes</dt>
-                        <dd>{shop.checkout.currencyCode} {shop.checkout.totalTax}</dd>
+                        <dd>{shop.checkout.currencyCode} {checkout.totalTax}</dd>
                     </dl>
                     <dl class="subtotal">
                         <dt>Total</dt>
-                        <dd>{shop.checkout.currencyCode} {shop.checkout.subtotalPrice}</dd>
+                        <dd>{checkout.currencyCode} {checkout.subtotalPrice}</dd>
                     </dl>
-                    <button class="checkout" on:click={shop.openCheckout}>Checkout</button>
+                    <button class="checkout" on:click={shop.redirectToCheckout}>Checkout</button>
                 </footer>
 
             {/if}
 
-            <Debug data={shop.redirectToCheckout}>Checkout dataset</Debug>
+            <Debug data={checkout}>Checkout dataset</Debug>
 
         </div>
     </div>

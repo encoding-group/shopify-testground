@@ -11,40 +11,50 @@
 	export let credentials;
 
 	let shop = new Shopify( credentials );
-	$: isCartVisible = shop.isCartVisible;
-	$: itemsInCart = shop.itemsInCart;
-	$: totalInCart = shop.totalInCart;
+
+	/*
+	* help required: how to make them reactive?
+	*/
+	let isCartVisible = shop.isCartVisible;
+	let itemsInCart = shop.itemsInCart;
+	let totalInCart = shop.totalInCart;
+
+	function showCart(){
+		shop.showCart();
+		isCartVisible = shop.isCartVisible;
+	}
+
+	function hideCart(){
+		shop.hideCart();
+		isCartVisible = shop.isCartVisible;
+	}
 
 </script>
 
 <main>
 
-	<Debug data={shop}>Shopify Class</Debug>
+	<div class="cart">
 
-	{#if !isCartVisible}
-		<div class="cart-button">
-			<button on:click={()=> shop.showCart()}>Open cart ( {itemsInCart} | {totalInCart} )</button>
-		</div>
-	{/if}
+		<button on:click={showCart}>Show Cart</button>
+		<button on:click={hideCart}>Hide Cart</button>
+
+		<span>{itemsInCart} items in Cart = {totalInCart}</span>
+
+	</div>
+
+	<Debug data={shop}>Shopify Class</Debug>
 
 	<ShopInfo {shop} />
 
 	<Products {shop} />
 
-	<Cart {shop} {isCartVisible} />
+	<Cart {shop} {hideCart} {isCartVisible} />
 
 </main>
 
 <style lang="scss">
 
 	main {
-		padding: 1rem;
-	}
-
-	.cart-button {
-		position: fixed;
-		top: 0;
-		right: 0;
 		padding: 1rem;
 	}
 

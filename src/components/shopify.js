@@ -48,7 +48,7 @@ export class Shopify {
     }
 
     get totalInCart(){
-        return this._checkout.paymentDue;
+        return this._checkout.paymentDue || '0.00';
     }
 
     async fetchCheckout(){
