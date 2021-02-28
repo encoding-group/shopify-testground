@@ -38,7 +38,7 @@
 
         <div class="options">
 
-            <QuantitySelector value={item.quantity} on:change={handleUpdateQuantity} />
+            <QuantitySelector value={item.quantity} on:update={handleUpdateQuantity} />
 
             <div class="price">
                 <span>{item.variant.priceV2.currencyCode} {price}</span>

@@ -8,8 +8,7 @@ export class Product {
         this._selection = {
             options: this.defaultOptionValues,
             variant: this.variant,
-            image: this.variant.image,
-            quantity: 1
+            image: this.variant.image
         };
 
     }
@@ -106,9 +105,6 @@ export class Product {
         }
         if( selection.hasOwnProperty('variant') ){
             this._selection.variant = selection.variant;
-        }
-        if( selection.hasOwnProperty('quantity') ){
-            this._selection.quantity = selection.quantity;
         }
         if( selection.hasOwnProperty('image') ){
             this._selection.image = selection.image;

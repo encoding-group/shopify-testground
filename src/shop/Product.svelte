@@ -21,24 +21,25 @@
     let quantity = 1;
     let selection = product.selection;
 
-    function handleOptionChange(event) {
+    function handleUpdateSelection(event) {
         const target = event.target;
-        console.log(`Product.handleOptionChange(${target.name} = ${target.value})`);
+        console.log(`Product.handleUpdateSelection(${target.name} = ${target.value})`);
         let selectedOptions = product.selection.options;
         selectedOptions[target.name] = target.value;
 
-        const selectedVariant = shop.client.product.helpers.variantForOptions(product.product, selectedOptions);
+        const selectedVariant = shop.findVariantForOptions(product.product, selectedOptions);
+        console.log( selectedVariant );
 
         product.selection = {
             options: selectedOptions,
             variant: selectedVariant,
-            image: selectedVariant.attrs.image,
+            image: selectedVariant.image,
         };
     }
 
-    function handleQuantityChange(event) {
+    function handleUpdateQuantity(event) {
         quantity = event.detail;
-        console.log(`Product.handleQuantityChange(${quantity})`);
+        console.log(`Product.handleUpdateQuantity(${quantity})`);
     }
 
     function handleAddVariantToCart(){
@@ -93,14 +94,14 @@
             {#if product.options.length > 1}
                 {#each product.options as option}
                     <VariantSelector
-                        {handleOptionChange}
+                        {handleUpdateSelection}
                         {option}
                         key={option.id.toString()}
                     />
                 {/each}
             {/if}
 
-            <QuantitySelector value={quantity} on:change={handleQuantityChange} />
+            <QuantitySelector value={quantity} on:update={handleUpdateQuantity} />
 
             <button class="buy" on:click={handleAddVariantToCart}>Add to Cart</button>
 

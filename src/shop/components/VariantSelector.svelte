@@ -1,12 +1,12 @@
 <script>
 
     export let option;
-    export let handleOptionChange;
+    export let handleUpdateSelection;
     export let key;
 
 </script>
 
-<select name={option.name} key={option.name} on:change={handleOptionChange} >
+<select name={option.name} key={option.name} on:change={handleUpdateSelection} >
 
     {#each option.values as value}
         <option {value} key={`${option.name}-${value}`}>{value}</option>
