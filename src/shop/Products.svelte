@@ -4,12 +4,9 @@
     import Debug from './components/Debug.svelte';
     export let shop;
 
-    let loadProducts = shop.fetchProducts();
-
-    /*
-    * help required, loading a collection doesn’t work
-    */
-    // let loadProducts = shop.fetchCollection( '234610983111' );
+    // let load = shop.fetchAllProducts();
+    let load = shop.fetchProducts([ '9895318531', '9895313027' ]);
+    // let load = shop.fetchCollection( '389242819' );
 
     function loadMore(){
         /*
@@ -20,19 +17,19 @@
 
 </script>
 
-{#await loadProducts}
+{#await load}
     Loading products
-{:then products}
+{:then data}
 
     <ul>
-        {#each products as item}
+        {#each data as item}
             <li>
                 <Product {item} {shop} />
             </li>
         {/each}
     </ul>
 
-    <p>Showing {products.length}</p>
+    <p>Showing {data.length}</p>
 
     <button on:click={loadMore}>Load more</button>
 

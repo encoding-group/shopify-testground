@@ -12,6 +12,7 @@ export class Shop {
         this._isCartVisible = false;
 
         this.fetchCheckout();
+
     }
 
     /* client */
@@ -160,38 +161,65 @@ export class Shop {
         return btoa(`gid://shopify/${type}/${id}`);
     }
 
-    fetchCollection( id ){
-        console.log(`Shopify.fetchCollection(${id})`);
-        /*
-        * help required, this doesn’t work
-        */
-        let collection = this.encodeId( id );
-        try {
-            return this._client.collection.fetchWithProducts( collection, {productsFirst: this.itemsPerRow} );
-        } catch (error) {
-            console.error( error );
-            return [];
-        }
-    }
-
-    fetchProducts( ids = [] ){
-        console.log(`Shopify.fetchProducts(${ids})`);
-        // if( ids.length > 0 ){
-        //     get list of products by specified ids
-        // } else {
-        //     get all products
-        // }
-
-        try {
-            return this._client.product.fetchAll( this.itemsPerRow );
-        } catch (error) {
-            console.error( error );
-            return [];
-        }
-    }
-
     findVariantForOptions( product, selectedOptions ){
-        return this._client.product.helpers.variantForOptions(product, selectedOptions);
+        return this.client.product.helpers.variantForOptions(product, selectedOptions);
+    }
+
+    async fetchProducts( ids = [] ){
+        console.log(`Shopify.fetchProducts(${ids})`);
+        ids = ids.map( id => this.encodeId( id, 'Product' ) );
+        return await this.client.product.fetchMultiple( ids )
+            .then((products) => {
+                return products;
+            })
+            .catch((error) => {
+                console.error( error );
+                return [];
+            });
+    }
+
+    async fetchAllProducts(){
+        console.log(`Shopify.fetchAllProducts()`);
+        return await this.client.product.fetchAll( this.itemsPerRow )
+            .then((products) => {
+                return products;
+            })
+            .catch((error) => {
+                console.error( error );
+                return [];
+            });
+    }
+
+    async fetchCollection( id ){
+        console.log(`Shopify.fetchCollection(${id})`);
+        return await this.client.collection.fetchWithProducts( this.encodeId( id ), {productsFirst: this.itemsPerRow} )
+            .then((collection) => {
+                return collection.products;
+            })
+            .catch((error) => {
+                console.error( error );
+                return [];
+            });
+    }
+
+    /* collections */
+
+    async fetchCollections(){
+        console.log(`Shopify.fetchCollections()`);
+        return await this.client.collection.fetchAllWithProducts()
+            .then((col) => {
+                let collections = [];
+                for (const collection of col) {
+                    if( collection.products.length > 0 ){
+                        collections.push( collection );
+                    }
+                }
+                return collections;
+            })
+            .catch((error) => {
+                console.error( error );
+                return [];
+            });
     }
 
 }
