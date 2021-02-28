@@ -5,14 +5,13 @@ export class Shopify {
     constructor( credentials, callbacks ){
 
         this._client = Client.buildClient( credentials );
+        this._callbacks = callbacks;
+
         this._checkout = { lineItems: [] };
         this._shop = {};
         this._isCartVisible = false;
 
-        this._callbacks = callbacks;
-
         this.fetchCheckout();
-
     }
 
     /* client */
@@ -45,6 +44,11 @@ export class Shopify {
         return this._checkout;
     }
 
+    set checkout( checkout = { lineItems: [] } ){
+        this._checkout = checkout;
+        this._callbacks.onUpdateCart(this);
+    }
+
     get itemsInCart(){
         return this._checkout.lineItems.length;
     }
@@ -56,12 +60,12 @@ export class Shopify {
     async fetchCheckout(){
         console.log('Shopify.fetchCheckout()');
         try {
-            this._checkout = await this._client.checkout.create();
-            return this._checkout;
+            this.checkout = await this._client.checkout.create();
+            return this.checkout;
         } catch (error) {
             console.error( error );
-            this._checkout = { lineItems: [] };
-            return {};
+            this.checkout = undefined;
+            return this.checkout;
         }
     }
 
@@ -74,14 +78,12 @@ export class Shopify {
         }];
 
         try {
-            this._checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = await this._client.checkout.addLineItems( this._checkout.id, lineItemsToAdd );
+            return this.checkout;
         } catch (error) {
             console.error( error );
-            this._checkout = { lineItems: [] };
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = undefined;
+            return this.checkout;
         }
 	}
 
@@ -93,28 +95,24 @@ export class Shopify {
         }];
 
         try {
-            this._checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = await this._client.checkout.updateLineItems( this._checkout.id, lineItemsToUpdate);
+            return this.checkout;
         } catch (error) {
             console.error( error );
-            this._checkout = { lineItems: [] };
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = undefined;
+            return this.checkout;
         }
 	}
 
     async removeLineItemInCart( lineItemId ){
         console.log(`Shopify.removeLineItemInCart(${atob(lineItemId)})`);
         try {
-            this._checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = await this._client.checkout.removeLineItems( this._checkout.id, [lineItemId] );
+            return this.checkout;
         } catch (error) {
             console.error( error );
-            this._checkout = { lineItems: [] };
-            this._callbacks.onUpdateCart(this);
-            return this._checkout;
+            this.checkout = undefined;
+            return this.checkout;
         }
 	}
 
@@ -133,23 +131,19 @@ export class Shopify {
         return this._isCartVisible;
     }
 
+    set isCartVisible( isVisible = true ){
+        this._isCartVisible = isVisible;
+        this._callbacks.onToggleCart( isVisible );
+    }
+
     showCart(){
         console.log('Shopify.showCart');
-        this._isCartVisible = true;
-        this._callbacks.onToggleCart( this._isCartVisible );
+        this.isCartVisible = true;
     }
 
     hideCart(){
         console.log('Shopify.hideCart');
-        this._isCartVisible = false;
-        this._callbacks.onToggleCart( this._isCartVisible );
-    }
-
-    toggleCart(){
-        console.log('Shopify.toggleCart');
-        this._isCartVisible = !this._isCartVisible;
-        this._callbacks.onToggleCart( this._isCartVisible );
-        return this._isCartVisible;
+        this.isCartVisible = false;
     }
 
     /* products */
