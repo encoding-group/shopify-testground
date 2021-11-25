@@ -47,6 +47,24 @@
         shop.addVariantToCart(selection.variant.id, quantity);
     }
 
+    let shopifyImgSizes = [
+        [ 'compact', 160 ],
+        [ 'medium', 240 ],
+        [ 'large', 480 ],
+        [ 'grande', 600 ],
+        [ '1024x1024', 1024 ],
+        [ '1600x1600', 1600 ],
+    ];
+    function imageSrcset( src ){
+        let filename = src.split('.');
+        let ext = filename.pop();
+        let srcset = '';
+        for (const [thumb, width] of shopifyImgSizes ) {
+            srcset += `${filename.join('.')}_${thumb}.${ext} ${width}w, `;
+        }
+        return srcset;
+    }
+
 </script>
 
 <article>
@@ -55,7 +73,7 @@
         <div class='gallery'>
             {#each product.images as image}
                 <figure>
-                    <img src={image.src} alt={`${product.title} product shot`}/>
+                    <img src={image.src} srcset={imageSrcset( selection.image.src )} alt={`${product.title} product shot`}/>
                 </figure>
             {/each}
         </div>
@@ -82,10 +100,6 @@
             <dd>{product.id}</dd>
 
         </dl>
-
-        <div class="selection">
-            <img src="{selection.image.src}" alt="Product" />
-        </div>
 
         <div class="buy">
 

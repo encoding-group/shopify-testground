@@ -1,6 +1,5 @@
 <script>
 
-	import { onMount } from 'svelte';
 	import { Shop } from './classes/shop.js';
 
 	import ShopInfo from './ShopInfo.svelte';

@@ -4,8 +4,8 @@
     import Debug from './components/Debug.svelte';
     export let shop;
 
-    // let load = shop.fetchAllProducts();
-    let load = shop.fetchProducts([ '9895318531', '9895313027' ]);
+    let load = shop.fetchAllProducts();
+    // let load = shop.fetchProducts([ '9895318531', '9895313027' ]);
     // let load = shop.fetchCollection( '389242819' );
 
     function loadMore(){
